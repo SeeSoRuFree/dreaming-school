@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
@@ -33,9 +34,11 @@ export default function Header() {
       <div className="container-main">
         <div className="flex justify-between items-center h-16">
           <Link href="/" className="flex items-center">
-            <img 
+            <Image 
               src="/images/logo.png" 
               alt="꿈을 짓는 학교 사회적협동조합" 
+              width={192}
+              height={48}
               className="h-12 w-auto"
             />
           </Link>

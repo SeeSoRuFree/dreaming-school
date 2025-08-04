@@ -134,8 +134,8 @@ export default function DonationInquirySection() {
 
         <div className="bg-white rounded-lg p-6 text-center">
           <p className="text-gray-700 italic">
-            "시골에서 늙어가고 있었는데, 아이들과 재능을 나누는 시간이<br />
-            저에게 '살아있구나'라는 감동을 주었습니다."
+            &ldquo;시골에서 늙어가고 있었는데, 아이들과 재능을 나누는 시간이<br />
+            저에게 &lsquo;살아있구나&rsquo;라는 감동을 주었습니다.&rdquo;
           </p>
           <div className="text-sm text-gray-500 mt-2">- 시니어 봉사크루 참여자</div>
         </div>
@@ -255,7 +255,7 @@ export default function DonationInquirySection() {
                     name="donationType"
                     value={type.value}
                     checked={formData.donationType === type.value}
-                    onChange={(e) => setFormData({...formData, donationType: e.target.value as any})}
+                    onChange={(e) => setFormData({...formData, donationType: e.target.value as 'corporate' | 'material' | 'equipment' | 'individual'})}
                     className="sr-only"
                   />
                   <div className={`p-3 border-2 rounded-lg text-center transition-all duration-200 ${

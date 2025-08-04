@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { GeneralInquiry, Reply } from '@/types'
+import { GeneralInquiry } from '@/types'
 import { mockGeneralInquiries } from '@/lib/mock-data'
 
 export default function GeneralInquirySection() {
@@ -116,7 +116,7 @@ export default function GeneralInquirySection() {
               </label>
               <select
                 value={formData.category}
-                onChange={(e) => setFormData({...formData, category: e.target.value as any})}
+                onChange={(e) => setFormData({...formData, category: e.target.value as '교육프로그램' | '시설이용' | '기타'})}
                 className="input-field"
               >
                 <option value="교육프로그램">교육프로그램</option>

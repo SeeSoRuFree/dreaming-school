@@ -156,8 +156,8 @@ export default function AboutPage() {
 
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white text-center py-6 rounded-xl shadow-lg mb-8">
             <p className="text-xl font-medium leading-relaxed px-6">
-              "모든 체험학습의 주인공은 가르치는 사람이 아니라<br/>
-              언제나 배우러는 아이들이어야 한다는 것이 저희의 신념입니다."
+              &ldquo;모든 체험학습의 주인공은 가르치는 사람이 아니라<br/>
+              언제나 배우러는 아이들이어야 한다는 것이 저희의 신념입니다.&rdquo;
             </p>
           </div>
         </div>

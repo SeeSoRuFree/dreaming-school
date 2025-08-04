@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function Footer() {
   return (
@@ -7,9 +8,11 @@ export default function Footer() {
         <div className="grid md:grid-cols-4 gap-8">
           <div className="md:col-span-1">
             <div className="mb-4">
-              <img 
+              <Image 
                 src="/images/logo.png" 
                 alt="꿈을 짓는 학교 사회적협동조합" 
+                width={192}
+                height={64}
                 className="h-16 w-auto filter brightness-0 invert"
               />
             </div>

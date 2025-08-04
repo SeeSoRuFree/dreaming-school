@@ -44,53 +44,53 @@ export default function AdminPage() {
       return
     }
 
+    const generateMockVisitStats = () => {
+      const stats: VisitStats[] = []
+      const today = new Date()
+      
+      // Generate stats for the last 30 days
+      for (let i = 30; i >= 0; i--) {
+        const date = new Date(today)
+        date.setDate(date.getDate() - i)
+        
+        stats.push({
+          id: `stats_${i}`,
+          date: date.toISOString().split('T')[0],
+          visits: Math.floor(Math.random() * 50) + 20,
+          uniqueVisitors: Math.floor(Math.random() * 40) + 15,
+          pageViews: Math.floor(Math.random() * 150) + 50
+        })
+      }
+      
+      setVisitStats(stats)
+      localStorage.setItem('admin-visit-stats', JSON.stringify(stats))
+    }
+
+    const loadData = () => {
+      try {
+        // Load users
+        const usersData = localStorage.getItem('dream-house-users')
+        if (usersData) {
+          setUsers(JSON.parse(usersData))
+        }
+
+        // Load or generate visit stats
+        const statsData = localStorage.getItem('admin-visit-stats')
+        if (statsData) {
+          setVisitStats(JSON.parse(statsData))
+        } else {
+          generateMockVisitStats()
+        }
+
+        setIsLoading(false)
+      } catch (error) {
+        console.error('Failed to load admin data:', error)
+        setIsLoading(false)
+      }
+    }
+
     loadData()
   }, [isAuthenticated, isAdmin, authLoading, router])
-
-  const loadData = () => {
-    try {
-      // Load users
-      const usersData = localStorage.getItem('dream-house-users')
-      if (usersData) {
-        setUsers(JSON.parse(usersData))
-      }
-
-      // Load or generate visit stats
-      const statsData = localStorage.getItem('admin-visit-stats')
-      if (statsData) {
-        setVisitStats(JSON.parse(statsData))
-      } else {
-        generateMockVisitStats()
-      }
-
-      setIsLoading(false)
-    } catch (error) {
-      console.error('Failed to load admin data:', error)
-      setIsLoading(false)
-    }
-  }
-
-  const generateMockVisitStats = () => {
-    const stats: VisitStats[] = []
-    const today = new Date()
-    
-    // Generate stats for the last 30 days
-    for (let i = 30; i >= 0; i--) {
-      const date = new Date(today)
-      date.setDate(date.getDate() - i)
-      
-      stats.push({
-        id: `stats_${i}`,
-        date: date.toISOString().split('T')[0],
-        visits: Math.floor(Math.random() * 50) + 20,
-        uniqueVisitors: Math.floor(Math.random() * 40) + 15,
-        pageViews: Math.floor(Math.random() * 150) + 50
-      })
-    }
-    
-    setVisitStats(stats)
-    localStorage.setItem('admin-visit-stats', JSON.stringify(stats))
-  }
 
   const getFilteredStats = () => {
     const today = new Date()
@@ -715,6 +715,7 @@ interface ComposeEmailTabProps {
   recipientType: 'all' | 'members' | 'crew' | 'selected'
   setRecipientType: (type: 'all' | 'members' | 'crew' | 'selected') => void
   selectedUsers: string[]
+  setSelectedUsers: (users: string[]) => void
   emailSubject: string
   setEmailSubject: (subject: string) => void
   emailContent: string
@@ -732,6 +733,7 @@ function ComposeEmailTab({
   recipientType,
   setRecipientType,
   selectedUsers,
+  setSelectedUsers: _,
   emailSubject,
   setEmailSubject,
   emailContent,

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { mockPrograms } from '@/lib/mock-data'
-import { formatPrice } from '@/lib/utils'
 import type { Program } from '@/types'
 
 // 프로그램 상세 이미지 데이터
@@ -88,7 +87,7 @@ const programDetailImages = [
 ]
 
 export default function ProgramsPage() {
-  const [programs, setPrograms] = useState<Program[]>([])
+  const [, setPrograms] = useState<Program[]>([])
 
   useEffect(() => {
     // 항상 최신 mock data 사용 (개발 중)

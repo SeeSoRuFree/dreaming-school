@@ -104,7 +104,7 @@ export default function NewsPage() {
               ].map((tab) => (
                 <button
                   key={tab.key}
-                  onClick={() => setSelectedCategory(tab.key as any)}
+                  onClick={() => setSelectedCategory(tab.key as 'all' | 'news' | 'notice')}
                   className={`px-6 py-3 rounded-md font-medium transition-all duration-200 ${
                     selectedCategory === tab.key
                       ? 'bg-white text-blue-700 shadow-sm'

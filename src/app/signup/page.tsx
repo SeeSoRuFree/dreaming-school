@@ -84,7 +84,7 @@ export default function SignupPage() {
     setIsSubmitting(true)
 
     try {
-      const { confirmPassword, ...registerData } = formData
+      const { confirmPassword: _, ...registerData } = formData
       const result = register(registerData)
       
       if (result.success) {

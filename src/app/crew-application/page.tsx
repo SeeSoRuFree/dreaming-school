@@ -14,6 +14,13 @@ interface CrewApplicationFormData {
   skills: string[]
 }
 
+interface CrewApplicationErrors {
+  motivation?: string
+  experience?: string
+  availableTime?: string
+  skills?: string
+}
+
 const skillOptions = [
   '목공 작업',
   '원예 활동',
@@ -37,7 +44,7 @@ export default function CrewApplicationPage() {
     availableTime: '',
     skills: []
   })
-  const [errors, setErrors] = useState<Partial<CrewApplicationFormData>>({})
+  const [errors, setErrors] = useState<CrewApplicationErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
@@ -58,7 +65,7 @@ export default function CrewApplicationPage() {
   }, [isAuthenticated, user, authLoading, router])
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<CrewApplicationFormData> = {}
+    const newErrors: CrewApplicationErrors = {}
 
     if (!formData.motivation.trim()) {
       newErrors.motivation = '지원 동기를 입력해주세요.'
