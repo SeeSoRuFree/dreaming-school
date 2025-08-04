@@ -35,7 +35,7 @@ export default function Header() {
         <div className="flex justify-between items-center h-16">
           <Link href="/" className="flex items-center">
             <Image 
-              src="/images/logo.png" 
+              src="/images/Logo.png" 
               alt="꿈을 짓는 학교 사회적협동조합" 
               width={192}
               height={48}

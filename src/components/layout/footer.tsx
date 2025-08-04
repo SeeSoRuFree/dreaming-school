@@ -9,7 +9,7 @@ export default function Footer() {
           <div className="md:col-span-1">
             <div className="mb-4">
               <Image 
-                src="/images/logo.png" 
+                src="/images/Logo.png" 
                 alt="꿈을 짓는 학교 사회적협동조합" 
                 width={192}
                 height={64}
