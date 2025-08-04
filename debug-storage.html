@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug LocalStorage</title>
+</head>
+<body>
+    <h1>LocalStorage Debug</h1>
+    <button onclick="checkStorage()">Check Storage</button>
+    <button onclick="clearStorage()">Clear Storage</button>
+    <button onclick="resetData()">Reset to New Data</button>
+    <pre id="output"></pre>
+
+    <script>
+        function checkStorage() {
+            const output = document.getElementById('output');
+            const users = localStorage.getItem('dream-house-users');
+            const auth = localStorage.getItem('dream-house-auth');
+            const apps = localStorage.getItem('crew-applications');
+            const posts = localStorage.getItem('crew-posts');
+            
+            output.textContent = `Users: ${users}\n\nAuth: ${auth}\n\nApplications: ${apps}\n\nPosts: ${posts}`;
+        }
+
+        function clearStorage() {
+            localStorage.removeItem('dream-house-users');
+            localStorage.removeItem('dream-house-auth');
+            localStorage.removeItem('crew-applications');
+            localStorage.removeItem('crew-posts');
+            alert('Storage cleared');
+        }
+
+        function resetData() {
+            const mockUsers = [
+                {
+                    id: 'admin_default',
+                    name: '관리자',
+                    email: 'admin@dreamhouse.coop',
+                    password: 'admin123',
+                    phone: '010-0000-0000',
+                    gender: 'other',
+                    joinPath: '시스템 초기화',
+                    firstImpression: '꿈을짓는학교의 관리자입니다.',
+                    createdAt: new Date('2024-01-01').toISOString(),
+                    role: 'admin',
+                    crewStatus: 'approved'
+                },
+                {
+                    id: 'crew_001',
+                    name: '김크루',
+                    email: 'crew1@example.com',
+                    password: 'crew123',
+                    phone: '010-1111-1111',
+                    gender: 'female',
+                    joinPath: '지인 소개',
+                    firstImpression: '아이들과 함께하는 교육활동에 관심이 많습니다.',
+                    createdAt: new Date('2024-06-15').toISOString(),
+                    role: 'crew',
+                    crewStatus: 'approved'
+                }
+            ];
+
+            localStorage.setItem('dream-house-users', JSON.stringify(mockUsers));
+            localStorage.removeItem('dream-house-auth');
+            alert('Data reset with new users');
+            checkStorage();
+        }
+    </script>
+</body>
+</html>
