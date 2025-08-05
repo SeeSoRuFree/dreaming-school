@@ -7,47 +7,20 @@ import { homeImageGroups } from '@/lib/home-images'
 export default function Home() {
   return (
     <>
-      {/* Hero Section with Video Background */}
+      {/* Hero Section */}
       <section className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden">
-        {/* Background Media */}
-        <div className="absolute inset-0 w-full h-full">
-          {/* GIF Fallback Background */}
-          <div className="absolute inset-0 w-full h-full">
-            <Image
-              src="/images/home/hero.gif"
-              alt="꿈을짓는학교 Hero Background"
-              fill
-              className="w-full h-full object-cover"
-              sizes="100vw"
-              priority
-              unoptimized={true}
-            />
-          </div>
-          
-          {/* Video Background (overlay on gif) */}
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="w-full h-full object-cover relative z-10"
-            poster="/images/home/hero.gif"
-            onError={(e) => {
-              // Hide video if it fails to load, showing the GIF background
-              e.currentTarget.style.display = 'none';
-            }}
-          >
-            <source src="/images/02.dream builders F (1).mp4" type="video/mp4" />
-          </video>
-          
-          {/* Dark overlay for better text readability */}
-          <div className="absolute inset-0 bg-black bg-opacity-60"></div>
-          
-          {/* Gradient overlay for enhanced visual appeal */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-black/40"></div>
-          
-          {/* Additional center overlay for text area */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-black/50 to-black/30"></div>
+        {/* Background GIF */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/images/home/hero.gif"
+            alt="꿈을짓는학교 배경"
+            fill
+            className="object-cover"
+            sizes="100vw"
+            priority
+          />
+          {/* Overlay for better text readability */}
+          <div className="absolute inset-0 bg-black/50"></div>
         </div>
 
         {/* Hero Content */}
