@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
+import { useAlert } from '@/hooks/useAlert'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 
@@ -20,6 +21,7 @@ interface SignupFormData {
 export default function SignupPage() {
   const router = useRouter()
   const { register } = useAuth()
+  const { showAlert } = useAlert()
   const [formData, setFormData] = useState<SignupFormData>({
     name: '',
     email: '',
@@ -88,17 +90,13 @@ export default function SignupPage() {
       const result = register(registerData)
       
       if (result.success) {
-        const shouldApplyCrew = confirm('회원가입이 완료되었습니다! 크루 봉사자 신청을 하시겠습니까?')
-        if (shouldApplyCrew) {
-          router.push('/crew-application')
-        } else {
-          router.push('/')
-        }
+        showAlert('회원가입이 완료되었습니다!', '가입 완료')
+        router.push('/')
       } else {
-        alert(result.error || '회원가입 중 오류가 발생했습니다.')
+        showAlert(result.error || '회원가입 중 오류가 발생했습니다.', '가입 오류')
       }
     } catch {
-      alert('회원가입 중 오류가 발생했습니다.')
+      showAlert('회원가입 중 오류가 발생했습니다.', '오류')
     } finally {
       setIsSubmitting(false)
     }

@@ -2,8 +2,10 @@
 
 import { useState } from 'react'
 import { DonationInquiry } from '@/types'
+import { useAlert } from '@/hooks/useAlert'
 
 export default function DonationInquirySection() {
+  const { showAlert } = useAlert()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -36,7 +38,7 @@ export default function DonationInquirySection() {
       message: ''
     })
     
-    alert('후원 문의가 접수되었습니다. 빠른 시일 내에 이메일로 연락드리겠습니다.')
+    showAlert('후원 문의가 접수되었습니다. 빠른 시일 내에 이메일로 연락드리겠습니다.')
   }
 
   return (

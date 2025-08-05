@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
+import { useAlert } from '@/hooks/useAlert'
 
 const navigation = [
   { name: 'ABOUT', href: '/about' },
@@ -13,6 +14,7 @@ const navigation = [
   { name: '소식 및 공지', href: '/news' },
   { name: '오시는길', href: '/location' },
   { name: '문의', href: '/contact' },
+  { name: '크루들의 방', href: '/crew-room' },
 ]
 
 export default function Header() {
@@ -21,11 +23,12 @@ export default function Header() {
   const pathname = usePathname()
   const router = useRouter()
   const { user, isAuthenticated, isCrew, logout } = useAuth()
+  const { showAlert } = useAlert()
 
   const handleLogout = () => {
     logout()
     setIsUserMenuOpen(false)
-    alert('로그아웃되었습니다.')
+    showAlert('로그아웃되었습니다.', '로그아웃')
     router.push('/')
   }
 
@@ -54,16 +57,6 @@ export default function Header() {
                 {item.name}
               </Link>
             ))}
-            
-            {/* Crew Navigation */}
-            {isCrew && (
-              <Link
-                href="/crew-room"
-                className={pathname === '/crew-room' ? 'nav-link-active' : 'nav-link'}
-              >
-                크루들의 방
-              </Link>
-            )}
 
             {/* Auth Navigation */}
             {isAuthenticated ? (
@@ -95,15 +88,6 @@ export default function Header() {
                         onClick={() => setIsUserMenuOpen(false)}
                       >
                         크루 신청 현황
-                      </Link>
-                    )}
-                    {!user?.crewStatus && (
-                      <Link
-                        href="/crew-application"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setIsUserMenuOpen(false)}
-                      >
-                        크루 봉사자 신청
                       </Link>
                     )}
                     <button
@@ -157,17 +141,6 @@ export default function Header() {
                 {item.name}
               </Link>
             ))}
-            
-            {/* Mobile Crew Navigation */}
-            {isCrew && (
-              <Link
-                href="/crew-room"
-                className={`block py-2 ${pathname === '/crew-room' ? 'text-blue-700 font-medium' : 'text-gray-700'}`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                크루들의 방
-              </Link>
-            )}
 
             {/* Mobile Auth Navigation */}
             {isAuthenticated ? (
@@ -191,16 +164,6 @@ export default function Header() {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     크루 신청 현황
-                  </Link>
-                )}
-                
-                {!user?.crewStatus && (
-                  <Link
-                    href="/crew-application"
-                    className="block py-2 text-gray-700"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    크루 봉사자 신청
                   </Link>
                 )}
                 

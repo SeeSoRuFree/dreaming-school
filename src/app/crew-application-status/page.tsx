@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
+import { useAlert } from '@/hooks/useAlert'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { CrewApplication } from '@/types'
@@ -10,6 +11,7 @@ import { CrewApplication } from '@/types'
 export default function CrewApplicationStatusPage() {
   const router = useRouter()
   const { user, isAuthenticated, isLoading: authLoading } = useAuth()
+  const { showAlert } = useAlert()
   const [application, setApplication] = useState<CrewApplication | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -18,13 +20,13 @@ export default function CrewApplicationStatusPage() {
     if (authLoading) return
 
     if (!isAuthenticated) {
-      alert('로그인이 필요합니다.')
+      showAlert('로그인이 필요합니다.')
       router.push('/login')
       return
     }
 
     if (!user?.crewStatus) {
-      alert('크루 봉사자 신청 내역이 없습니다.')
+      showAlert('크루 봉사자 신청 내역이 없습니다.')
       router.push('/crew-application')
       return
     }

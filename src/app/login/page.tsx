@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
+import { useAlert } from '@/hooks/useAlert'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 
@@ -14,6 +15,7 @@ interface LoginFormData {
 export default function LoginPage() {
   const router = useRouter()
   const { login } = useAuth()
+  const { showAlert } = useAlert()
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
     password: ''
@@ -49,8 +51,8 @@ export default function LoginPage() {
       const result = login(formData.email, formData.password)
       
       if (result.success) {
-        alert(`환영합니다, ${result.user?.name}님!`)
-        router.push('/')
+        showAlert(`환영합니다, ${result.user?.name}님!`, '로그인 성공')
+        router.replace('/')
       } else {
         setErrors({ password: result.error })
       }

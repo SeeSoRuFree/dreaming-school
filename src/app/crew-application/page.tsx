@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
+import { useAlert } from '@/hooks/useAlert'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { CrewApplication } from '@/types'
@@ -38,6 +39,7 @@ const skillOptions = [
 export default function CrewApplicationPage() {
   const router = useRouter()
   const { user, isAuthenticated, updateUser, isLoading: authLoading } = useAuth()
+  const { showAlert } = useAlert()
   const [formData, setFormData] = useState<CrewApplicationFormData>({
     motivation: '',
     experience: '',
@@ -52,13 +54,13 @@ export default function CrewApplicationPage() {
     if (authLoading) return
 
     if (!isAuthenticated) {
-      alert('로그인이 필요합니다.')
+      showAlert('로그인이 필요합니다.')
       router.push('/login')
       return
     }
 
     if (user?.crewStatus) {
-      alert('이미 크루 봉사자 신청을 하셨습니다.')
+      showAlert('이미 크루 봉사자 신청을 하셨습니다.')
       router.push('/crew-application-status')
       return
     }
@@ -112,10 +114,10 @@ export default function CrewApplicationPage() {
       // Update user status
       updateUser({ crewStatus: 'pending' })
 
-      alert('크루 봉사자 신청이 완료되었습니다! 승인 결과를 기다려주세요.')
+      showAlert('크루 봉사자 신청이 완료되었습니다! 승인 결과를 기다려주세요.')
       router.push('/crew-application-status')
     } catch {
-      alert('신청 중 오류가 발생했습니다.')
+      showAlert('신청 중 오류가 발생했습니다.')
     } finally {
       setIsSubmitting(false)
     }

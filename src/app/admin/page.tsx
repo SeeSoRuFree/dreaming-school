@@ -5,7 +5,10 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { User, VisitStats, EmailSent, EmailTemplate } from '@/types'
+import { User, VisitStats, EmailSent, EmailTemplate, CrewApplication } from '@/types'
+import { authUtils } from '@/lib/auth'
+import { useAlert } from '@/hooks/useAlert'
+import { CrewManagementTab } from './crew-management'
 
 interface StatsPeriod {
   label: string
@@ -22,7 +25,8 @@ const statsPeriods: StatsPeriod[] = [
 export default function AdminPage() {
   const router = useRouter()
   const { user, isAuthenticated, isAdmin, isLoading: authLoading } = useAuth()
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'mailing'>('dashboard')
+  const { showAlert } = useAlert()
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'mailing' | 'crew'>('dashboard')
   const [users, setUsers] = useState<User[]>([])
   const [visitStats, setVisitStats] = useState<VisitStats[]>([])
   const [selectedPeriod, setSelectedPeriod] = useState<StatsPeriod['value']>('today')
@@ -33,13 +37,13 @@ export default function AdminPage() {
     if (authLoading) return
 
     if (!isAuthenticated) {
-      alert('로그인이 필요합니다.')
+      showAlert('로그인이 필요합니다.')
       router.push('/login')
       return
     }
 
     if (!isAdmin) {
-      alert('관리자만 접근할 수 있습니다.')
+      showAlert('관리자만 접근할 수 있습니다.')
       router.push('/')
       return
     }
@@ -224,6 +228,16 @@ export default function AdminPage() {
               >
                 메일링 시스템
               </button>
+              <button
+                onClick={() => setActiveTab('crew')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'crew'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                크루 관리
+              </button>
             </nav>
           </div>
         </div>
@@ -243,6 +257,10 @@ export default function AdminPage() {
 
         {activeTab === 'mailing' && (
           <MailingTab users={users} currentUser={user!} />
+        )}
+
+        {activeTab === 'crew' && (
+          <CrewManagementTab users={users} currentUser={user!} />
         )}
       </div>
     </div>
@@ -500,6 +518,7 @@ function DashboardTab({
 
 // Mailing Tab Component
 function MailingTab({ users, currentUser }: { users: User[], currentUser: User }) {
+  const { showAlert } = useAlert()
   const [activeSubTab, setActiveSubTab] = useState<'compose' | 'templates' | 'history'>('compose')
   const [selectedUsers, setSelectedUsers] = useState<string[]>([])
   const [recipientType, setRecipientType] = useState<'all' | 'members' | 'crew' | 'selected'>('all')
@@ -560,13 +579,13 @@ function MailingTab({ users, currentUser }: { users: User[], currentUser: User }
 
   const handleSendEmail = async () => {
     if (!emailSubject.trim() || !emailContent.trim()) {
-      alert('제목과 내용을 모두 입력해주세요.')
+      showAlert('제목과 내용을 모두 입력해주세요.')
       return
     }
 
     const recipients = getFilteredUsers()
     if (recipients.length === 0) {
-      alert('받는 사람을 선택해주세요.')
+      showAlert('받는 사람을 선택해주세요.')
       return
     }
 
@@ -589,7 +608,7 @@ function MailingTab({ users, currentUser }: { users: User[], currentUser: User }
       setEmailHistory(updatedHistory)
       localStorage.setItem('email-history', JSON.stringify(updatedHistory))
 
-      alert(`${recipients.length}명에게 이메일을 발송했습니다.`)
+      showAlert(`${recipients.length}명에게 이메일을 발송했습니다.`)
       
       // 폼 초기화
       setEmailSubject('')
@@ -599,7 +618,7 @@ function MailingTab({ users, currentUser }: { users: User[], currentUser: User }
       
     } catch (error) {
       console.error('Email sending failed:', error)
-      alert('이메일 발송 중 오류가 발생했습니다.')
+      showAlert('이메일 발송 중 오류가 발생했습니다.')
     } finally {
       setIsSending(false)
     }
@@ -607,7 +626,7 @@ function MailingTab({ users, currentUser }: { users: User[], currentUser: User }
 
   const saveTemplate = () => {
     if (!emailSubject.trim() || !emailContent.trim()) {
-      alert('제목과 내용을 모두 입력해주세요.')
+      showAlert('제목과 내용을 모두 입력해주세요.')
       return
     }
 
@@ -623,7 +642,7 @@ function MailingTab({ users, currentUser }: { users: User[], currentUser: User }
     setTemplates(updatedTemplates)
     localStorage.setItem('email-templates', JSON.stringify(updatedTemplates))
     
-    alert('템플릿이 저장되었습니다.')
+    showAlert('템플릿이 저장되었습니다.')
   }
 
   const loadTemplate = (template: EmailTemplate) => {
@@ -899,12 +918,13 @@ interface TemplateTabProps {
 }
 
 function TemplateTab({ templates, setTemplates, loadTemplate }: TemplateTabProps) {
+  const { showAlert } = useAlert()
   const deleteTemplate = (templateId: string) => {
-    if (confirm('이 템플릿을 삭제하시겠습니까?')) {
-      const updatedTemplates = templates.filter((t: EmailTemplate) => t.id !== templateId)
-      setTemplates(updatedTemplates)
-      localStorage.setItem('email-templates', JSON.stringify(updatedTemplates))
-    }
+    showAlert('이 템플릿을 삭제하시겠습니까?', '확인')
+    // Note: For now using showAlert, this could be improved with a confirmation dialog later
+    const updatedTemplates = templates.filter((t: EmailTemplate) => t.id !== templateId)
+    setTemplates(updatedTemplates)
+    localStorage.setItem('email-templates', JSON.stringify(updatedTemplates))
   }
 
   return (

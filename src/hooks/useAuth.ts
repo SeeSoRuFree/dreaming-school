@@ -25,10 +25,18 @@ export function useAuth() {
       }
     }
 
+    // Listen for auth state changes (login/logout in same tab)
+    const handleAuthStateChange = () => {
+      const currentUser = authUtils.getCurrentUser()
+      setUser(currentUser)
+    }
+
     window.addEventListener('storage', handleStorageChange)
+    window.addEventListener(authUtils.getAuthStateChangeEvent(), handleAuthStateChange)
     
     return () => {
       window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener(authUtils.getAuthStateChangeEvent(), handleAuthStateChange)
     }
   }, [])
 

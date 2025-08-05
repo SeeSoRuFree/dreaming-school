@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react'
 import { GeneralInquiry } from '@/types'
 import { mockGeneralInquiries } from '@/lib/mock-data'
+import { useAlert } from '@/hooks/useAlert'
 
 export default function GeneralInquirySection() {
+  const { showAlert } = useAlert()
   const [inquiries, setInquiries] = useState<GeneralInquiry[]>([])
   const [showForm, setShowForm] = useState(false)
   const [formData, setFormData] = useState({
@@ -49,7 +51,7 @@ export default function GeneralInquirySection() {
       isPublic: true
     })
     setShowForm(false)
-    alert('문의가 등록되었습니다.')
+    showAlert('문의가 등록되었습니다.')
   }
 
   const formatDate = (date: Date) => {

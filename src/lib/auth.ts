@@ -5,9 +5,19 @@ import { User } from '@/types'
 const AUTH_KEY = 'dream-house-auth'
 const USERS_KEY = 'dream-house-users'
 
+// Custom event for auth state changes
+const AUTH_STATE_CHANGE_EVENT = 'auth-state-change'
+
 export interface AuthState {
   user: User | null
   isAuthenticated: boolean
+}
+
+// Helper function to dispatch auth state change event
+const dispatchAuthStateChange = () => {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event(AUTH_STATE_CHANGE_EVENT))
+  }
 }
 
 export const authUtils = {
@@ -41,6 +51,7 @@ export const authUtils = {
       }
       
       localStorage.setItem(AUTH_KEY, JSON.stringify({ userId: user.id }))
+      dispatchAuthStateChange() // Notify auth state change
       return { success: true, user }
     } catch {
       return { success: false, error: '로그인 중 오류가 발생했습니다.' }
@@ -49,6 +60,7 @@ export const authUtils = {
 
   logout: (): void => {
     localStorage.removeItem(AUTH_KEY)
+    dispatchAuthStateChange() // Notify auth state change
   },
 
   register: (userData: Omit<User, 'id' | 'createdAt' | 'role' | 'crewStatus'>): { success: boolean; user?: User; error?: string } => {
@@ -73,6 +85,7 @@ export const authUtils = {
       
       // Auto login after registration
       localStorage.setItem(AUTH_KEY, JSON.stringify({ userId: newUser.id }))
+      dispatchAuthStateChange() // Notify auth state change
       
       return { success: true, user: newUser }
     } catch {
@@ -120,6 +133,9 @@ export const authUtils = {
     const user = authUtils.getCurrentUser()
     return user?.role === 'admin'
   },
+
+  // Get auth state change event name
+  getAuthStateChangeEvent: (): string => AUTH_STATE_CHANGE_EVENT,
 
   // Initialize default users and data for testing
   initializeDefaultUsers: (): void => {

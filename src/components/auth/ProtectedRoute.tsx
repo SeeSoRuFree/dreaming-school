@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
+import { useAlert } from '@/hooks/useAlert'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -21,24 +22,25 @@ export default function ProtectedRoute({
 }: ProtectedRouteProps) {
   const { isAuthenticated, isCrew, isAdmin, isLoading } = useAuth()
   const router = useRouter()
+  const { showAlert } = useAlert()
 
   useEffect(() => {
     if (isLoading) return
 
     if (requireAuth && !isAuthenticated) {
-      alert('로그인이 필요합니다.')
+      showAlert('로그인이 필요합니다.')
       router.push(redirectTo)
       return
     }
 
     if (requireCrew && !isCrew) {
-      alert('크루 봉사자만 접근할 수 있습니다.')
+      showAlert('크루 봉사자만 접근할 수 있습니다.')
       router.push('/')
       return
     }
 
     if (requireAdmin && !isAdmin) {
-      alert('관리자만 접근할 수 있습니다.')
+      showAlert('관리자만 접근할 수 있습니다.')
       router.push('/')
       return
     }

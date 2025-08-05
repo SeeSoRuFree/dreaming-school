@@ -3,13 +3,18 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
+import { useAlert } from '@/hooks/useAlert'
+import { useConfirm } from '@/hooks/useConfirm'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { CrewPost, CrewComment } from '@/types'
+import { Users, FileQuestion, Clock, UserPlus, Trash2 } from 'lucide-react'
 
 export default function CrewRoomPage() {
   const router = useRouter()
   const { user, isAuthenticated, isCrew, isLoading: authLoading } = useAuth()
+  const { showAlert } = useAlert()
+  const { showConfirm } = useConfirm()
   const [posts, setPosts] = useState<CrewPost[]>([])
   const [newPost, setNewPost] = useState({ title: '', content: '', category: 'general' as CrewPost['category'] })
   const [isLoading, setIsLoading] = useState(true)
@@ -19,20 +24,13 @@ export default function CrewRoomPage() {
     // Wait for auth to finish loading
     if (authLoading) return
 
-    if (!isAuthenticated) {
-      alert('로그인이 필요합니다.')
-      router.push('/login')
-      return
+    // Only load posts if user is an approved crew member
+    if (isAuthenticated && isCrew) {
+      loadPosts()
+    } else {
+      setIsLoading(false)
     }
-
-    if (!isCrew) {
-      alert('크루 봉사자만 접근할 수 있습니다.')
-      router.push('/')
-      return
-    }
-
-    loadPosts()
-  }, [isAuthenticated, isCrew, authLoading, router])
+  }, [isAuthenticated, isCrew, authLoading])
 
   const loadPosts = () => {
     try {
@@ -119,6 +117,37 @@ export default function CrewRoomPage() {
     localStorage.setItem('crew-posts', JSON.stringify(updatedPosts))
   }
 
+  const handleDeletePost = async (postId: string) => {
+    if (!user) return
+
+    const post = posts.find(p => p.id === postId)
+    if (!post) return
+
+    // 권한 확인: 작성자 본인 또는 관리자만 삭제 가능
+    const canDelete = post.authorId === user.id || user.role === 'admin'
+    if (!canDelete) {
+      showAlert('본인이 작성한 게시글만 삭제할 수 있습니다.', '권한 없음')
+      return
+    }
+
+    // 삭제 확인
+    const confirmed = await showConfirm({
+      title: '게시글 삭제',
+      message: '정말 이 게시글을 삭제하시겠습니까?\n삭제된 게시글은 복구할 수 없습니다.',
+      confirmText: '삭제',
+      cancelText: '취소'
+    })
+
+    if (!confirmed) return
+
+    // 게시글 삭제
+    const updatedPosts = posts.filter(p => p.id !== postId)
+    setPosts(updatedPosts)
+    localStorage.setItem('crew-posts', JSON.stringify(updatedPosts))
+    
+    showAlert('게시글이 삭제되었습니다.', '삭제 완료')
+  }
+
   const getCategoryDisplay = (category: string | undefined) => {
     switch (category) {
       case 'general': return '일반'
@@ -139,7 +168,7 @@ export default function CrewRoomPage() {
     }
   }
 
-  if (authLoading || (!isAuthenticated || !isCrew) && authLoading) {
+  if (authLoading) {
     return (
       <div className="container-main section-padding">
         <div className="max-w-4xl mx-auto text-center">
@@ -150,7 +179,125 @@ export default function CrewRoomPage() {
     )
   }
 
-  if (!isAuthenticated || !isCrew) {
+  // 비로그인 사용자
+  if (!isAuthenticated) {
+    return (
+      <>
+        {/* Hero Section */}
+        <section className="bg-gradient-to-b from-blue-50 to-white">
+          <div className="container-main py-16">
+            <h1 className="heading-1 text-center">크루들의 방</h1>
+            <p className="body-text text-center mt-6 max-w-3xl mx-auto text-gray-600">
+              크루 봉사자들만의 특별한 소통 공간입니다. 자유롭게 이야기를 나누어보세요.
+            </p>
+          </div>
+        </section>
+
+        <div className="container-main section-padding">
+          <div className="max-w-2xl mx-auto text-center">
+            <Card className="p-12">
+              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Users className="w-10 h-10 text-blue-700" />
+              </div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">크루 봉사자가 되어 함께해요!</h1>
+              <p className="text-lg text-gray-600 mb-8">
+                꿈을짓는학교의 크루 봉사자들이 모여 소통하는 공간입니다.
+                <br />
+                로그인 후 크루 신청을 해주세요.
+              </p>
+              <Button 
+                onClick={() => router.push('/login')}
+                className="btn-primary"
+              >
+                로그인하기
+              </Button>
+            </Card>
+          </div>
+        </div>
+      </>
+    )
+  }
+
+  // 일반 회원 (크루 신청 전)
+  if (!user?.crewStatus) {
+    return (
+      <>
+        {/* Hero Section */}
+        <section className="bg-gradient-to-b from-blue-50 to-white">
+          <div className="container-main py-16">
+            <h1 className="heading-1 text-center">크루들의 방</h1>
+            <p className="body-text text-center mt-6 max-w-3xl mx-auto text-gray-600">
+              크루 봉사자들만의 특별한 소통 공간입니다. 자유롭게 이야기를 나누어보세요.
+            </p>
+          </div>
+        </section>
+
+        <div className="container-main section-padding">
+          <div className="max-w-2xl mx-auto text-center">
+            <Card className="p-12">
+              <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <UserPlus className="w-10 h-10 text-amber-700" />
+              </div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">크루 봉사자가 되어 함께해요!</h1>
+              <p className="text-lg text-gray-600 mb-8">
+                꿈을짓는학교와 함께 아이들의 꿈을 키워갈 크루 봉사자를 기다리고 있어요.
+                <br />
+                여러분의 재능과 열정을 나눠주세요!
+              </p>
+              <Button 
+                onClick={() => router.push('/crew-application')}
+                className="btn-primary"
+              >
+                크루 신청하기
+              </Button>
+            </Card>
+          </div>
+        </div>
+      </>
+    )
+  }
+
+  // 크루 신청 후 검토 중
+  if (user.crewStatus === 'pending') {
+    return (
+      <>
+        {/* Hero Section */}
+        <section className="bg-gradient-to-b from-blue-50 to-white">
+          <div className="container-main py-16">
+            <h1 className="heading-1 text-center">크루들의 방</h1>
+            <p className="body-text text-center mt-6 max-w-3xl mx-auto text-gray-600">
+              크루 봉사자들만의 특별한 소통 공간입니다. 자유롭게 이야기를 나누어보세요.
+            </p>
+          </div>
+        </section>
+
+        <div className="container-main section-padding">
+          <div className="max-w-2xl mx-auto text-center">
+            <Card className="p-12">
+              <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Clock className="w-10 h-10 text-yellow-700" />
+              </div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">신청이 검토 중입니다</h1>
+              <p className="text-lg text-gray-600 mb-8">
+                크루 봉사자 신청을 검토하고 있어요.
+                <br />
+                결과는 이메일로 안내드릴 예정입니다.
+              </p>
+              <Button 
+                onClick={() => router.push('/crew-application-status')}
+                className="btn-soft"
+              >
+                신청 현황 보기
+              </Button>
+            </Card>
+          </div>
+        </div>
+      </>
+    )
+  }
+
+  // 크루 승인된 경우만 아래 컨텐츠 표시
+  if (!isCrew) {
     return null
   }
 
@@ -166,112 +313,117 @@ export default function CrewRoomPage() {
   }
 
   return (
-    <div className="container-main section-padding">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="heading-1">크루들의 방</h1>
-          <p className="text-gray-600 mt-4">
+    <>
+      {/* Hero Section */}
+      <section className="bg-gradient-to-b from-blue-50 to-white">
+        <div className="container-main py-16">
+          <h1 className="heading-1 text-center">크루들의 방</h1>
+          <p className="body-text text-center mt-6 max-w-3xl mx-auto text-gray-600">
             크루 봉사자들만의 특별한 소통 공간입니다. 자유롭게 이야기를 나누어보세요.
           </p>
         </div>
+      </section>
 
-        {/* Welcome Card */}
-        <Card className="p-6 mb-8 bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
-          <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-lg">{user?.name.charAt(0)}</span>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-blue-900">안녕하세요, {user?.name}님!</h3>
-              <p className="text-blue-700">크루 봉사자로서 활동해주셔서 감사합니다.</p>
-            </div>
-          </div>
-        </Card>
-
-        {/* Create Post Section */}
-        <Card className="p-6 mb-8">
-          {!showNewPostForm ? (
-            <button
-              onClick={() => setShowNewPostForm(true)}
-              className="w-full p-4 text-left text-gray-500 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              무엇을 공유하고 싶나요?
-            </button>
-          ) : (
-            <form onSubmit={handleCreatePost} className="space-y-4">
+      <div className="container-main section-padding">
+        <div className="max-w-4xl mx-auto">
+            {/* Welcome Card */}
+          <Card className="p-6 mb-8 bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-lg">{user?.name.charAt(0)}</span>
+              </div>
               <div>
-                <select
-                  value={newPost.category}
-                  onChange={(e) => setNewPost({ ...newPost, category: e.target.value as CrewPost['category'] })}
-                  className="input-field mb-4"
-                >
-                  <option value="general">일반</option>
-                  <option value="event">이벤트</option>
-                  <option value="notice">공지</option>
-                  <option value="qa">Q&A</option>
-                </select>
+                <h3 className="text-lg font-semibold text-blue-900">안녕하세요, {user?.name}님!</h3>
+                <p className="text-blue-700">크루 봉사자로서 활동해주셔서 감사합니다.</p>
               </div>
-              
-              <input
-                type="text"
-                placeholder="제목을 입력하세요..."
-                value={newPost.title}
-                onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
-                className="input-field"
-                required
-              />
-              
-              <textarea
-                placeholder="내용을 입력하세요..."
-                value={newPost.content}
-                onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
-                rows={4}
-                className="textarea-field"
-                required
-              />
-              
-              <div className="flex space-x-2">
-                <Button type="submit" className="btn-primary">
-                  게시하기
-                </Button>
-                <Button 
-                  type="button" 
-                  variant="outline"
-                  onClick={() => {
-                    setShowNewPostForm(false)
-                    setNewPost({ title: '', content: '', category: 'general' })
-                  }}
-                >
-                  취소
-                </Button>
-              </div>
-            </form>
-          )}
-        </Card>
+            </div>
+          </Card>
 
-        {/* Posts List */}
-        <div className="space-y-6">
-          {posts.length === 0 ? (
-            <Card className="p-8 text-center">
-              <p className="text-gray-500">아직 게시글이 없습니다. 첫 번째 글을 작성해보세요!</p>
-            </Card>
-          ) : (
-            posts.map(post => (
-              <PostCard
-                key={post.id}
-                post={post}
-                currentUser={user!}
-                onLike={() => handleLikePost(post.id)}
-                onComment={(content) => handleAddComment(post.id, content)}
-                getCategoryDisplay={getCategoryDisplay}
-                getCategoryColor={getCategoryColor}
-              />
-            ))
-          )}
+          {/* Create Post Section */}
+          <Card className="p-6 mb-8">
+            {!showNewPostForm ? (
+              <button
+                onClick={() => setShowNewPostForm(true)}
+                className="w-full p-4 text-left text-gray-500 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                무엇을 공유하고 싶나요?
+              </button>
+            ) : (
+              <form onSubmit={handleCreatePost} className="space-y-4">
+                <div>
+                  <select
+                    value={newPost.category}
+                    onChange={(e) => setNewPost({ ...newPost, category: e.target.value as CrewPost['category'] })}
+                    className="input-field mb-4"
+                  >
+                    <option value="general">일반</option>
+                    <option value="event">이벤트</option>
+                    <option value="notice">공지</option>
+                    <option value="qa">Q&A</option>
+                  </select>
+                </div>
+                
+                <input
+                  type="text"
+                  placeholder="제목을 입력하세요..."
+                  value={newPost.title}
+                  onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
+                  className="input-field"
+                  required
+                />
+                
+                <textarea
+                  placeholder="내용을 입력하세요..."
+                  value={newPost.content}
+                  onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+                  rows={4}
+                  className="textarea-field"
+                  required
+                />
+                
+                <div className="flex space-x-2">
+                  <Button type="submit" className="btn-primary">
+                    게시하기
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="outline"
+                    onClick={() => {
+                      setShowNewPostForm(false)
+                      setNewPost({ title: '', content: '', category: 'general' })
+                    }}
+                  >
+                    취소
+                  </Button>
+                </div>
+              </form>
+            )}
+          </Card>
+
+          {/* Posts List */}
+          <div className="space-y-6">
+            {posts.length === 0 ? (
+              <Card className="p-8 text-center">
+                <p className="text-gray-500">아직 게시글이 없습니다. 첫 번째 글을 작성해보세요!</p>
+              </Card>
+            ) : (
+              posts.map(post => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  currentUser={user!}
+                  onLike={() => handleLikePost(post.id)}
+                  onComment={(content) => handleAddComment(post.id, content)}
+                  onDelete={() => handleDeletePost(post.id)}
+                  getCategoryDisplay={getCategoryDisplay}
+                  getCategoryColor={getCategoryColor}
+                />
+              ))
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
 
@@ -281,11 +433,12 @@ interface PostCardProps {
   currentUser: NonNullable<ReturnType<typeof useAuth>['user']>
   onLike: () => void
   onComment: (content: string) => void
+  onDelete: () => void
   getCategoryDisplay: (category: string | undefined) => string
   getCategoryColor: (category: string | undefined) => string
 }
 
-function PostCard({ post, currentUser, onLike, onComment, getCategoryDisplay, getCategoryColor }: PostCardProps) {
+function PostCard({ post, currentUser, onLike, onComment, onDelete, getCategoryDisplay, getCategoryColor }: PostCardProps) {
   const [showComments, setShowComments] = useState(false)
   const [newComment, setNewComment] = useState('')
 
@@ -298,6 +451,7 @@ function PostCard({ post, currentUser, onLike, onComment, getCategoryDisplay, ge
   }
 
   const isLiked = post.likes.includes(currentUser.id)
+  const canDelete = post.authorId === currentUser.id || currentUser.role === 'admin'
 
   return (
     <Card className="p-6">
@@ -314,9 +468,20 @@ function PostCard({ post, currentUser, onLike, onComment, getCategoryDisplay, ge
             </p>
           </div>
         </div>
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(post.category)}`}>
-          {getCategoryDisplay(post.category)}
-        </span>
+        <div className="flex items-center space-x-2">
+          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(post.category)}`}>
+            {getCategoryDisplay(post.category)}
+          </span>
+          {canDelete && (
+            <button
+              onClick={onDelete}
+              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              title="게시글 삭제"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Post Content */}

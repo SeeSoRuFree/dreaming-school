@@ -1,26 +1,39 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
+import { homeImageGroups } from '@/lib/home-images'
 
 export default function Home() {
   return (
     <>
       {/* Hero Section with Video Background */}
       <section className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden">
-        {/* Video Background */}
+        {/* Background Media */}
         <div className="absolute inset-0 w-full h-full">
-          {/* Fallback background in case video doesn't load */}
-          <div className="absolute inset-0 w-full h-full video-fallback"></div>
+          {/* GIF Fallback Background */}
+          <div className="absolute inset-0 w-full h-full">
+            <Image
+              src="/images/home/hero.gif"
+              alt="꿈을짓는학교 Hero Background"
+              fill
+              className="w-full h-full object-cover"
+              sizes="100vw"
+              priority
+              unoptimized={true}
+            />
+          </div>
           
+          {/* Video Background (overlay on gif) */}
           <video
             autoPlay
             loop
             muted
             playsInline
             className="w-full h-full object-cover relative z-10"
-            poster="/images/Logo.png"
+            poster="/images/home/hero.gif"
             onError={(e) => {
-              // Hide video if it fails to load, showing the fallback background
+              // Hide video if it fails to load, showing the GIF background
               e.currentTarget.style.display = 'none';
             }}
           >
@@ -107,21 +120,34 @@ export default function Home() {
             </div>
             
             {/* Main Introduction Card */}
-            <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 mb-12 border border-blue-100">
-              <div className="prose max-w-none text-center">
-                <p className="text-lg leading-relaxed text-gray-700 mb-6">
-                  꿈을짓는학교는 <span className="font-semibold text-blue-700">OECD 국가 청소년 행복지수가 최하위</span>인 대한민국 청소년들에게
-                  <span className="text-blue-700 font-semibold"> 집단성취감을 통한 바른 품성과 자긍심 회복</span>을 목적으로 설립되었습니다.
-                </p>
-                <p className="text-lg leading-relaxed text-gray-700 mb-6">
-                  특히 <span className="text-blue-700 font-semibold">도서 지역 청소년들의 열악한 교육환경 개선</span> 및 
-                  교육기회 불평등을 해소하고, <span className="text-blue-700 font-semibold">인구소멸 위기지역의 작은학교 살리기</span>에 집중하고 있습니다.
-                </p>
-                <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-xl mt-8">
-                  <p className="text-xl font-medium italic">
-                    &ldquo;모든 체험학습의 주인공은 가르치는 사람이 아니라<br/>
-                    언제나 배우려는 아이들이어야 한다는 것이 저희의 신념입니다.&rdquo;
+            <div className="relative bg-white rounded-2xl shadow-xl overflow-hidden mb-12 border border-blue-100">
+              {/* 배경 이미지 */}
+              <div className="absolute inset-0 opacity-5">
+                <Image
+                  src="/images/home/KakaoTalk_20240528_130049921_02.jpg"
+                  alt="꿈을짓는학교 배경"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1200px) 100vw, 1200px"
+                />
+              </div>
+              
+              <div className="relative z-10 p-8 md:p-12">
+                <div className="prose max-w-none text-center">
+                  <p className="text-lg leading-relaxed text-gray-700 mb-6">
+                    꿈을짓는학교는 <span className="font-semibold text-blue-700">OECD 국가 청소년 행복지수가 최하위</span>인 대한민국 청소년들에게
+                    <span className="text-blue-700 font-semibold"> 집단성취감을 통한 바른 품성과 자긍심 회복</span>을 목적으로 설립되었습니다.
                   </p>
+                  <p className="text-lg leading-relaxed text-gray-700 mb-6">
+                    특히 <span className="text-blue-700 font-semibold">도서 지역 청소년들의 열악한 교육환경 개선</span> 및 
+                    교육기회 불평등을 해소하고, <span className="text-blue-700 font-semibold">인구소멸 위기지역의 작은학교 살리기</span>에 집중하고 있습니다.
+                  </p>
+                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-xl mt-8">
+                    <p className="text-xl font-medium italic">
+                      &ldquo;모든 체험학습의 주인공은 가르치는 사람이 아니라<br/>
+                      언제나 배우려는 아이들이어야 한다는 것이 저희의 신념입니다.&rdquo;
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -158,10 +184,149 @@ export default function Home() {
                 <p className="text-gray-600">지역업체 CSR활동 연계 및 폐교위기 학교 살리기 운동</p>
               </div>
             </div>
+            
+            {/* 활동 이미지 섹션 */}
+            <div className="mt-16">
+              <div className="grid md:grid-cols-4 gap-4">
+                <div className="relative aspect-square rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow">
+                  <Image
+                    src="/images/home/KakaoTalk_20240528_130049921_02.jpg"
+                    alt="활동 사진 1"
+                    fill
+                    className="object-cover hover:scale-105 transition-transform duration-300"
+                    sizes="(max-width: 768px) 50vw, 25vw"
+                  />
+                </div>
+                <div className="relative aspect-square rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow">
+                  <Image
+                    src="/images/home/KakaoTalk_20240528_130049921_07.jpg"
+                    alt="활동 사진 2"
+                    fill
+                    className="object-cover hover:scale-105 transition-transform duration-300"
+                    sizes="(max-width: 768px) 50vw, 25vw"
+                  />
+                </div>
+                <div className="relative aspect-square rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow">
+                  <Image
+                    src="/images/home/KakaoTalk_20240528_130049921_08.jpg"
+                    alt="활동 사진 3"
+                    fill
+                    className="object-cover hover:scale-105 transition-transform duration-300"
+                    sizes="(max-width: 768px) 50vw, 25vw"
+                  />
+                </div>
+                <div className="relative aspect-square rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow">
+                  <Image
+                    src="/images/home/KakaoTalk_20240528_130049921_09.jpg"
+                    alt="활동 사진 4"
+                    fill
+                    className="object-cover hover:scale-105 transition-transform duration-300"
+                    sizes="(max-width: 768px) 50vw, 25vw"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
+      {/* 교육 현장 섹션 */}
+      <section className="bg-gradient-to-b from-blue-50 to-white">
+        <div className="container-main section-padding">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold text-blue-900 mb-4">우리가 만들어가는 교육 현장</h2>
+              <p className="text-xl text-gray-600">학교와 지역사회가 함께하는 체험교육의 현장</p>
+            </div>
+            
+            <div className="grid lg:grid-cols-2 gap-8">
+              {/* 교육 현장 이미지 */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2 relative aspect-[16/9] rounded-lg overflow-hidden shadow-lg">
+                  <Image
+                    src="/images/home/KakaoTalk_20240516_190354456_11.jpg"
+                    alt="학교 현장 교육"
+                    fill
+                    className="object-cover hover:scale-105 transition-transform duration-300"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                </div>
+                <div className="relative aspect-square rounded-lg overflow-hidden shadow-lg">
+                  <Image
+                    src="/images/home/KakaoTalk_20240516_190354456_16.jpg"
+                    alt="체험 학습 진행"
+                    fill
+                    className="object-cover hover:scale-105 transition-transform duration-300"
+                    sizes="(max-width: 768px) 50vw, 25vw"
+                  />
+                </div>
+                <div className="relative aspect-square rounded-lg overflow-hidden shadow-lg">
+                  <Image
+                    src="/images/home/KakaoTalk_20240528_130049921_15.jpg"
+                    alt="야외 체험 활동"
+                    fill
+                    className="object-cover hover:scale-105 transition-transform duration-300"
+                    sizes="(max-width: 768px) 50vw, 25vw"
+                  />
+                </div>
+              </div>
+              
+              {/* 교육 방식 설명 */}
+              <div className="flex flex-col justify-center">
+                <h3 className="text-2xl font-bold text-gray-800 mb-6">찾아가는 맞춤형 체험교육</h3>
+                <div className="space-y-4 mb-8">
+                  <div className="flex items-start">
+                    <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                    <p className="text-gray-700 leading-relaxed">
+                      학교로 직접 찾아가는 현장 중심 교육 프로그램 운영
+                    </p>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                    <p className="text-gray-700 leading-relaxed">
+                      각 학교의 환경과 특성에 맞춘 맞춤형 커리큘럼 제공
+                    </p>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                    <p className="text-gray-700 leading-relaxed">
+                      전문 교육 장비와 재료를 현장으로 이동하여 교육 진행
+                    </p>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                    <p className="text-gray-700 leading-relaxed">
+                      학교 내 유휴공간을 활용한 창의적 교육 환경 조성
+                    </p>
+                  </div>
+                </div>
+                
+                {/* 교육 철학 */}
+                <div className="bg-blue-50 rounded-lg p-6 mb-6">
+                  <h4 className="text-lg font-semibold text-blue-900 mb-3">품성·이론·실기 복합교육</h4>
+                  <p className="text-gray-700 leading-relaxed">
+                    꿈을짓는학교는 <span className="font-semibold text-blue-700">품성교육 + 이론 + 실기</span>가 
+                    복합된 키자니아식 교육을 통해 학생들이 있는 곳에서 최상의 교육을 제공합니다. 
+                    7명의 전문 조합원과 교육봉사 크루가 각 분야별 전문성을 바탕으로 
+                    도서 지역과 소규모 학교까지 찾아가는 교육 서비스를 실현합니다.
+                  </p>
+                </div>
+                
+                {/* 프로그램 운영 방식 */}
+                <div className="border-l-4 border-blue-600 pl-6">
+                  <h4 className="text-lg font-semibold text-gray-800 mb-2">프로그램별 운영 방식</h4>
+                  <ul className="space-y-2 text-gray-600">
+                    <li>• <span className="font-medium">소형 집짓기</span>: 학교 운동장이나 강당에서 10~12회기 진행</li>
+                    <li>• <span className="font-medium">과학창의교육</span>: 교실 및 과학실을 활용한 실험 교육</li>
+                    <li>• <span className="font-medium">공간 리모델링</span>: 학교 유휴공간을 학생들과 함께 재창조</li>
+                    <li>• <span className="font-medium">원예 프로그램</span>: 학교 텃밭이나 화단을 활용한 생태 교육</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Programs Preview Section */}
       <section className="bg-gray-50">
@@ -214,10 +379,16 @@ export default function Home() {
                       </svg>
                     </Link>
                   </div>
-                  <div className="bg-gradient-to-br from-blue-500/20 to-blue-700/20 h-full min-h-[300px] flex items-center justify-center">
-                    <svg className="w-32 h-32 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                    </svg>
+                  <div className="relative bg-gradient-to-br from-blue-500/20 to-blue-700/20 h-full min-h-[300px] overflow-hidden">
+                    <Image
+                      src="/images/program/1/20200910_104741.jpg"
+                      alt="소형 집짓기 체험교육 현장"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                    />
+                    {/* 이미지 위 그라데이션 오버레이 */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-blue-800/60 via-blue-600/20 to-transparent"></div>
                   </div>
                 </div>
               </div>
@@ -293,13 +464,80 @@ export default function Home() {
             </div>
           </div>
           
-          <div className="text-center">
+          <div className="text-center mt-12">
             <Link href="/programs" className="inline-flex items-center bg-blue-700 text-white font-semibold px-8 py-4 rounded-lg hover:bg-blue-800 transition-colors shadow-lg">
               전체 프로그램 상세보기
               <svg className="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 특별한 순간들 섹션 */}
+      <section className="bg-white">
+        <div className="container-main section-padding">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold text-gray-900 mb-4">특별한 순간들</h2>
+              <p className="text-xl text-gray-600">꿈을짓는학교에서 만들어가는 소중한 추억</p>
+            </div>
+            
+            {/* 이벤트 이미지 갤러리 */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+              <div className="group relative aspect-[4/3] rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300">
+                <Image
+                  src="/images/home/KakaoTalk_20240528_130049921_22.jpg"
+                  alt="특별한 순간 1"
+                  fill
+                  className="object-cover group-hover:scale-110 transition-transform duration-500"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="absolute bottom-4 left-4 text-white">
+                    <p className="text-lg font-semibold">함께하는 체험학습</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="group relative aspect-[4/3] rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300">
+                <Image
+                  src="/images/home/KakaoTalk_20240528_130049921_23.jpg"
+                  alt="특별한 순간 2"
+                  fill
+                  className="object-cover group-hover:scale-110 transition-transform duration-500"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="absolute bottom-4 left-4 text-white">
+                    <p className="text-lg font-semibold">성취의 기쁨</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="group relative aspect-[4/3] rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300">
+                <Image
+                  src="/images/home/KakaoTalk_20240528_130049921_27.jpg"
+                  alt="특별한 순간 3"
+                  fill
+                  className="object-cover group-hover:scale-110 transition-transform duration-500"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="absolute bottom-4 left-4 text-white">
+                    <p className="text-lg font-semibold">꿈의 실현</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="text-center">
+              <p className="text-lg text-gray-700 leading-relaxed max-w-3xl mx-auto">
+                매 순간이 소중한 배움이 되는 <span className="text-blue-700 font-semibold">꿈을짓는학교</span>에서<br/>
+                아이들은 자신의 가능성을 발견하고 <span className="text-blue-700 font-semibold">미래를 준비</span>합니다.
+              </p>
+            </div>
           </div>
         </div>
       </section>
