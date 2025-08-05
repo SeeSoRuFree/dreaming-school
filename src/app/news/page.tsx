@@ -1,14 +1,30 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Card } from "@/components/ui/card"
 import { mockNews } from '@/lib/mock-data'
 import { News } from '@/types'
 import { Calendar, ChevronRight, Bell, Newspaper } from 'lucide-react'
 
-export default function NewsPage() {
+function NewsContent() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'news' | 'notice'>('all')
   const [selectedNews, setSelectedNews] = useState<News | null>(null)
+
+  // URL 파라미터에서 뉴스 ID 읽기
+  useEffect(() => {
+    const newsId = searchParams.get('id')
+    if (newsId) {
+      const news = mockNews.find(n => n.id === newsId)
+      if (news) {
+        setSelectedNews(news)
+      }
+    } else {
+      setSelectedNews(null)
+    }
+  }, [searchParams])
 
   const filteredNews = selectedCategory === 'all' 
     ? mockNews 
@@ -41,7 +57,7 @@ export default function NewsPage() {
         <section className="bg-gradient-to-b from-blue-50 to-white">
           <div className="container-main py-16">
             <button
-              onClick={() => setSelectedNews(null)}
+              onClick={() => router.push('/news')}
               className="flex items-center text-blue-700 hover:text-blue-800 mb-6 transition-colors font-medium"
             >
               <ChevronRight className="w-5 h-5 rotate-180 mr-2" />
@@ -128,7 +144,7 @@ export default function NewsPage() {
               <Card 
                 key={news.id} 
                 className="hover:shadow-lg transition-all duration-300 cursor-pointer border-0 shadow-sm hover:-translate-y-1"
-                onClick={() => setSelectedNews(news)}
+                onClick={() => router.push(`/news?id=${news.id}`)}
               >
                 <div className="p-6">
                   <div className="flex items-start justify-between">
@@ -174,5 +190,13 @@ export default function NewsPage() {
         )}
       </div>
     </>
+  )
+}
+
+export default function NewsPage() {
+  return (
+    <Suspense fallback={<div className="container-main py-16 text-center">로딩 중...</div>}>
+      <NewsContent />
+    </Suspense>
   )
 }
