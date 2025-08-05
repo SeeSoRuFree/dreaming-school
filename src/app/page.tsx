@@ -50,8 +50,8 @@ export default function Home() {
           <p className="text-xl md:text-2xl mb-8 text-white font-medium leading-relaxed max-w-4xl mx-auto drop-shadow-lg" style={{textShadow: '1px 1px 4px rgba(0,0,0,0.8)'}}>
             <span className="text-blue-100 font-semibold">배움의 행복을 전하고 삶의 가치를 나누는</span><br />
             사회적협동조합으로<br />
-            <span className="text-amber-100">품성교육 + 이론 + 실기</span>가 복합된 키자니아식 교육을 통해<br />
-            <span className="text-emerald-100 font-semibold">도서지역 청소년들의 전인적 성장</span>을 돕습니다
+            <span className="text-blue-100">품성교육 + 이론 + 실기</span>가 복합된 키자니아식 교육을 통해<br />
+            <span className="text-white font-semibold">도서지역 청소년들의 전인적 성장</span>을 돕습니다
           </p>
           
           {/* Action Buttons */}
@@ -75,15 +75,15 @@ export default function Home() {
           {/* Key Highlights */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             <div className="bg-white/15 backdrop-blur-enhanced rounded-lg p-6 border-2 border-white/30 hover:bg-white/25 hover:border-white/50 transition-all duration-300 shadow-2xl">
-              <div className="text-3xl font-bold text-amber-100 mb-2 drop-shadow-lg" style={{textShadow: '2px 2px 4px rgba(0,0,0,0.8)'}}>11명</div>
+              <div className="text-3xl font-bold text-white mb-2 drop-shadow-lg" style={{textShadow: '2px 2px 4px rgba(0,0,0,0.8)'}}>11명</div>
               <div className="text-white font-semibold drop-shadow-md" style={{textShadow: '1px 1px 2px rgba(0,0,0,0.7)'}}>전문 조합원</div>
             </div>
             <div className="bg-white/15 backdrop-blur-enhanced rounded-lg p-6 border-2 border-white/30 hover:bg-white/25 hover:border-white/50 transition-all duration-300 shadow-2xl">
-              <div className="text-3xl font-bold text-blue-100 mb-2 drop-shadow-lg" style={{textShadow: '2px 2px 4px rgba(0,0,0,0.8)'}}>5가지</div>
+              <div className="text-3xl font-bold text-white mb-2 drop-shadow-lg" style={{textShadow: '2px 2px 4px rgba(0,0,0,0.8)'}}>5가지</div>
               <div className="text-white font-semibold drop-shadow-md" style={{textShadow: '1px 1px 2px rgba(0,0,0,0.7)'}}>주요 교육사업</div>
             </div>
             <div className="bg-white/15 backdrop-blur-enhanced rounded-lg p-6 border-2 border-white/30 hover:bg-white/25 hover:border-white/50 transition-all duration-300 shadow-2xl">
-              <div className="text-3xl font-bold text-emerald-100 mb-2 drop-shadow-lg" style={{textShadow: '2px 2px 4px rgba(0,0,0,0.8)'}}>2022년</div>
+              <div className="text-3xl font-bold text-white mb-2 drop-shadow-lg" style={{textShadow: '2px 2px 4px rgba(0,0,0,0.8)'}}>2022년</div>
               <div className="text-white font-semibold drop-shadow-md" style={{textShadow: '1px 1px 2px rgba(0,0,0,0.7)'}}>설립</div>
             </div>
           </div>
@@ -111,11 +111,11 @@ export default function Home() {
               <div className="prose max-w-none text-center">
                 <p className="text-lg leading-relaxed text-gray-700 mb-6">
                   꿈을짓는학교는 <span className="font-semibold text-blue-700">OECD 국가 청소년 행복지수가 최하위</span>인 대한민국 청소년들에게
-                  <span className="text-amber-600 font-semibold"> 집단성취감을 통한 바른 품성과 자긍심 회복</span>을 목적으로 설립되었습니다.
+                  <span className="text-blue-700 font-semibold"> 집단성취감을 통한 바른 품성과 자긍심 회복</span>을 목적으로 설립되었습니다.
                 </p>
                 <p className="text-lg leading-relaxed text-gray-700 mb-6">
-                  특히 <span className="text-emerald-600 font-semibold">도서 지역 청소년들의 열악한 교육환경 개선</span> 및 
-                  교육기회 불평등을 해소하고, <span className="text-purple-600 font-semibold">인구소멸 위기지역의 작은학교 살리기</span>에 집중하고 있습니다.
+                  특히 <span className="text-blue-700 font-semibold">도서 지역 청소년들의 열악한 교육환경 개선</span> 및 
+                  교육기회 불평등을 해소하고, <span className="text-blue-700 font-semibold">인구소멸 위기지역의 작은학교 살리기</span>에 집중하고 있습니다.
                 </p>
                 <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-xl mt-8">
                   <p className="text-xl font-medium italic">
@@ -128,7 +128,7 @@ export default function Home() {
 
             {/* Key Features Grid */}
             <div className="grid md:grid-cols-3 gap-6 mb-12">
-              <div className="bg-white rounded-xl shadow-lg p-6 border-t-4 border-blue-500 hover:shadow-xl transition-shadow">
+              <div className="bg-white rounded-xl shadow-lg p-6 border-t-4 border-blue-600 hover:shadow-xl transition-shadow">
                 <div className="text-blue-600 mb-4">
                   <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
@@ -138,8 +138,8 @@ export default function Home() {
                 <p className="text-gray-600">품성교육 + 이론 + 실기가 복합된 현장감 있는 체험교육</p>
               </div>
               
-              <div className="bg-white rounded-xl shadow-lg p-6 border-t-4 border-emerald-500 hover:shadow-xl transition-shadow">
-                <div className="text-emerald-600 mb-4">
+              <div className="bg-white rounded-xl shadow-lg p-6 border-t-4 border-blue-600 hover:shadow-xl transition-shadow">
+                <div className="text-blue-600 mb-4">
                   <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
@@ -148,8 +148,8 @@ export default function Home() {
                 <p className="text-gray-600">다양한 분야의 전문가 11명이 함께하는 교육 공동체</p>
               </div>
               
-              <div className="bg-white rounded-xl shadow-lg p-6 border-t-4 border-amber-500 hover:shadow-xl transition-shadow">
-                <div className="text-amber-600 mb-4">
+              <div className="bg-white rounded-xl shadow-lg p-6 border-t-4 border-blue-600 hover:shadow-xl transition-shadow">
+                <div className="text-blue-600 mb-4">
                   <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                   </svg>
@@ -224,10 +224,10 @@ export default function Home() {
             </div>
 
             {/* Other Programs - Smaller Cards */}
-            <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all p-8 border-l-4 border-emerald-500">
+            <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all p-8 border-l-4 border-blue-500">
               <div className="flex items-start space-x-4">
-                <div className="bg-emerald-100 rounded-lg p-3">
-                  <svg className="w-8 h-8 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="bg-blue-50 rounded-lg p-3">
+                  <svg className="w-8 h-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
                 </div>
@@ -236,15 +236,15 @@ export default function Home() {
                   <p className="text-gray-600 mb-4">
                     비행기 원리 학습, 창의목공, IT메이커 교육 등 다양한 과학 체험
                   </p>
-                  <p className="text-sm text-emerald-600 font-semibold">단기 및 심화과정 운영</p>
+                  <p className="text-sm text-blue-600 font-semibold">단기 및 심화과정 운영</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all p-8 border-l-4 border-purple-500">
+            <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all p-8 border-l-4 border-blue-500">
               <div className="flex items-start space-x-4">
-                <div className="bg-purple-100 rounded-lg p-3">
-                  <svg className="w-8 h-8 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="bg-blue-50 rounded-lg p-3">
+                  <svg className="w-8 h-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                   </svg>
                 </div>
@@ -253,15 +253,15 @@ export default function Home() {
                   <p className="text-gray-600 mb-4">
                     학교 유휴공간을 교육적 환경으로 리모델링하는 참여형 프로젝트
                   </p>
-                  <p className="text-sm text-purple-600 font-semibold">학생 참여형 공간 설계</p>
+                  <p className="text-sm text-blue-600 font-semibold">학생 참여형 공간 설계</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all p-8 border-l-4 border-amber-500">
+            <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all p-8 border-l-4 border-blue-500">
               <div className="flex items-start space-x-4">
-                <div className="bg-amber-100 rounded-lg p-3">
-                  <svg className="w-8 h-8 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="bg-blue-50 rounded-lg p-3">
+                  <svg className="w-8 h-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                   </svg>
                 </div>
@@ -270,15 +270,15 @@ export default function Home() {
                   <p className="text-gray-600 mb-4">
                     텃밭과 꽃밭 가꾸기를 통한 생명 존중 교육과 정서 함양
                   </p>
-                  <p className="text-sm text-amber-600 font-semibold">10차수 체계적 교육</p>
+                  <p className="text-sm text-blue-600 font-semibold">10차수 체계적 교육</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all p-8 border-l-4 border-rose-500">
+            <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all p-8 border-l-4 border-blue-500">
               <div className="flex items-start space-x-4">
-                <div className="bg-rose-100 rounded-lg p-3">
-                  <svg className="w-8 h-8 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="bg-blue-50 rounded-lg p-3">
+                  <svg className="w-8 h-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
@@ -287,7 +287,7 @@ export default function Home() {
                   <p className="text-gray-600 mb-4">
                     주거역량강화 체험학습으로 지역 공동체 활성화 프로그램
                   </p>
-                  <p className="text-sm text-rose-600 font-semibold">지역 맞춤형 교육</p>
+                  <p className="text-sm text-blue-600 font-semibold">지역 맞춤형 교육</p>
                 </div>
               </div>
             </div>
@@ -305,7 +305,7 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gradient-to-br from-blue-50 to-amber-50">
+      <section className="bg-gradient-to-br from-blue-50 to-blue-100">
         <div className="container-main section-padding text-center">
           <h2 className="heading-2 mb-6">
             함께 꿈을 키워나가요
