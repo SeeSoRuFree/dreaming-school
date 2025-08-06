@@ -138,13 +138,6 @@ export interface CrewComment {
   updatedAt?: Date
 }
 
-export interface VisitStats {
-  id: string
-  date: string
-  visits: number
-  uniqueVisitors: number
-  pageViews: number
-}
 
 export interface EmailTemplate {
   id: string

@@ -19,6 +19,7 @@ export default function CrewRoomPage() {
   const [newPost, setNewPost] = useState({ title: '', content: '', category: 'general' as CrewPost['category'] })
   const [isLoading, setIsLoading] = useState(true)
   const [showNewPostForm, setShowNewPostForm] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState<'all' | CrewPost['category']>('all')
 
   useEffect(() => {
     // Wait for auth to finish loading
@@ -357,9 +358,13 @@ export default function CrewRoomPage() {
                     className="input-field mb-4"
                   >
                     <option value="general">일반</option>
-                    <option value="event">이벤트</option>
-                    <option value="notice">공지</option>
                     <option value="qa">Q&A</option>
+                    {user?.role === 'admin' && (
+                      <>
+                        <option value="notice">공지</option>
+                        <option value="event">이벤트</option>
+                      </>
+                    )}
                   </select>
                 </div>
                 
@@ -400,26 +405,92 @@ export default function CrewRoomPage() {
             )}
           </Card>
 
+          {/* Category Filter */}
+          <Card className="p-4 mb-8">
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setSelectedCategory('all')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  selectedCategory === 'all'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                전체
+              </button>
+              <button
+                onClick={() => setSelectedCategory('notice')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  selectedCategory === 'notice'
+                    ? 'bg-red-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                공지
+              </button>
+              <button
+                onClick={() => setSelectedCategory('event')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  selectedCategory === 'event'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                이벤트
+              </button>
+              <button
+                onClick={() => setSelectedCategory('qa')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  selectedCategory === 'qa'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Q&A
+              </button>
+              <button
+                onClick={() => setSelectedCategory('general')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  selectedCategory === 'general'
+                    ? 'bg-gray-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                일반
+              </button>
+            </div>
+          </Card>
+
           {/* Posts List */}
           <div className="space-y-6">
-            {posts.length === 0 ? (
-              <Card className="p-8 text-center">
-                <p className="text-gray-500">아직 게시글이 없습니다. 첫 번째 글을 작성해보세요!</p>
-              </Card>
-            ) : (
-              posts.map(post => (
-                <PostCard
-                  key={post.id}
-                  post={post}
-                  currentUser={user!}
-                  onLike={() => handleLikePost(post.id)}
-                  onComment={(content) => handleAddComment(post.id, content)}
-                  onDelete={() => handleDeletePost(post.id)}
-                  getCategoryDisplay={getCategoryDisplay}
-                  getCategoryColor={getCategoryColor}
-                />
-              ))
-            )}
+            {(() => {
+              const filteredPosts = selectedCategory === 'all' 
+                ? posts 
+                : posts.filter(post => post.category === selectedCategory)
+              
+              return filteredPosts.length === 0 ? (
+                <Card className="p-8 text-center">
+                  <p className="text-gray-500">
+                    {selectedCategory === 'all' 
+                      ? '아직 게시글이 없습니다. 첫 번째 글을 작성해보세요!'
+                      : `${getCategoryDisplay(selectedCategory)} 카테고리에 게시글이 없습니다.`}
+                  </p>
+                </Card>
+              ) : (
+                filteredPosts.map(post => (
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    currentUser={user!}
+                    onLike={() => handleLikePost(post.id)}
+                    onComment={(content) => handleAddComment(post.id, content)}
+                    onDelete={() => handleDeletePost(post.id)}
+                    getCategoryDisplay={getCategoryDisplay}
+                    getCategoryColor={getCategoryColor}
+                  />
+                ))
+              )
+            })()}
           </div>
         </div>
       </div>

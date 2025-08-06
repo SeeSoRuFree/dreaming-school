@@ -159,12 +159,15 @@ export default function ProgramsPage() {
 
                       {/* 프로그램 자세히 보기 버튼 */}
                       <div className="pt-4">
-                        <button className="inline-flex items-center px-6 py-3 bg-blue-700 hover:bg-blue-800 text-white font-medium rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg">
+                        <a 
+                          href={`/programs/${program.category === 'building' ? '1' : program.category === 'science' ? '2' : program.category === 'remodeling' ? '3' : program.category === 'gardening' ? '4' : '5'}`} 
+                          className="inline-flex items-center px-6 py-3 bg-blue-700 hover:bg-blue-800 text-white font-medium rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
+                        >
                           <span>프로그램 자세히 보기</span>
                           <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                           </svg>
-                        </button>
+                        </a>
                       </div>
                     </div>
                   </div>

@@ -5,32 +5,23 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { User, VisitStats, EmailSent, EmailTemplate, CrewApplication } from '@/types'
+import { User, EmailSent, EmailTemplate, CrewApplication, News, GeneralInquiry, DonationInquiry } from '@/types'
+import { mockNews, mockGeneralInquiries } from '@/lib/mock-data'
 import { authUtils } from '@/lib/auth'
 import { useAlert } from '@/hooks/useAlert'
 import { CrewManagementTab } from './crew-management'
+import { CrewRoomManagementTab } from './crew-room-management'
 
-interface StatsPeriod {
-  label: string
-  value: 'today' | 'week' | 'month' | 'custom'
-}
-
-const statsPeriods: StatsPeriod[] = [
-  { label: '오늘', value: 'today' },
-  { label: '이번 주', value: 'week' },
-  { label: '이번 달', value: 'month' },
-  { label: '기간 설정', value: 'custom' }
-]
 
 export default function AdminPage() {
   const router = useRouter()
   const { user, isAuthenticated, isAdmin, isLoading: authLoading } = useAuth()
   const { showAlert } = useAlert()
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'mailing' | 'crew'>('dashboard')
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'members' | 'mailing' | 'crew' | 'crew-room' | 'news' | 'inquiry'>('dashboard')
   const [users, setUsers] = useState<User[]>([])
-  const [visitStats, setVisitStats] = useState<VisitStats[]>([])
-  const [selectedPeriod, setSelectedPeriod] = useState<StatsPeriod['value']>('today')
-  const [customDateRange, setCustomDateRange] = useState({ start: '', end: '' })
+  const [news, setNews] = useState<News[]>([])
+  const [generalInquiries, setGeneralInquiries] = useState<GeneralInquiry[]>([])
+  const [donationInquiries, setDonationInquiries] = useState<DonationInquiry[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -48,28 +39,6 @@ export default function AdminPage() {
       return
     }
 
-    const generateMockVisitStats = () => {
-      const stats: VisitStats[] = []
-      const today = new Date()
-      
-      // Generate stats for the last 30 days
-      for (let i = 30; i >= 0; i--) {
-        const date = new Date(today)
-        date.setDate(date.getDate() - i)
-        
-        stats.push({
-          id: `stats_${i}`,
-          date: date.toISOString().split('T')[0],
-          visits: Math.floor(Math.random() * 50) + 20,
-          uniqueVisitors: Math.floor(Math.random() * 40) + 15,
-          pageViews: Math.floor(Math.random() * 150) + 50
-        })
-      }
-      
-      setVisitStats(stats)
-      localStorage.setItem('admin-visit-stats', JSON.stringify(stats))
-    }
-
     const loadData = () => {
       try {
         // Load users
@@ -78,12 +47,47 @@ export default function AdminPage() {
           setUsers(JSON.parse(usersData))
         }
 
-        // Load or generate visit stats
-        const statsData = localStorage.getItem('admin-visit-stats')
-        if (statsData) {
-          setVisitStats(JSON.parse(statsData))
+        // Load news - 기존 localStorage 데이터가 있으면 사용, 없으면 mockNews로 초기화
+        const newsData = localStorage.getItem('dream-house-news')
+        if (newsData) {
+          setNews(JSON.parse(newsData))
         } else {
-          generateMockVisitStats()
+          // mockNews를 localStorage에 저장하고 state에도 설정
+          localStorage.setItem('dream-house-news', JSON.stringify(mockNews))
+          setNews(mockNews)
+        }
+
+        // Load general inquiries
+        const generalInquiriesData = localStorage.getItem('general-inquiries')
+        if (generalInquiriesData) {
+          const parsedInquiries = JSON.parse(generalInquiriesData)
+          // Date 객체로 변환
+          const inquiriesWithDates = parsedInquiries.map((inquiry: any) => ({
+            ...inquiry,
+            createdAt: new Date(inquiry.createdAt),
+            replies: inquiry.replies?.map((reply: any) => ({
+              ...reply,
+              createdAt: new Date(reply.createdAt)
+            })) || []
+          }))
+          setGeneralInquiries(inquiriesWithDates)
+        } else {
+          localStorage.setItem('general-inquiries', JSON.stringify(mockGeneralInquiries))
+          setGeneralInquiries(mockGeneralInquiries)
+        }
+
+        // Load donation inquiries
+        const donationInquiriesData = localStorage.getItem('donation-inquiries')
+        if (donationInquiriesData) {
+          const parsedDonationInquiries = JSON.parse(donationInquiriesData)
+          // Date 객체로 변환
+          const donationInquiriesWithDates = parsedDonationInquiries.map((inquiry: any) => ({
+            ...inquiry,
+            createdAt: new Date(inquiry.createdAt)
+          }))
+          setDonationInquiries(donationInquiriesWithDates)
+        } else {
+          setDonationInquiries([])
         }
 
         setIsLoading(false)
@@ -96,37 +100,11 @@ export default function AdminPage() {
     loadData()
   }, [isAuthenticated, isAdmin, authLoading, router])
 
-  const getFilteredStats = () => {
-    const today = new Date()
-    let startDate = new Date()
-    let endDate = new Date()
-
-    switch (selectedPeriod) {
-      case 'today':
-        startDate = new Date(today.toISOString().split('T')[0])
-        endDate = new Date(today.toISOString().split('T')[0])
-        break
-      case 'week':
-        startDate = new Date(today)
-        startDate.setDate(today.getDate() - 7)
-        break
-      case 'month':
-        startDate = new Date(today)
-        startDate.setDate(today.getDate() - 30)
-        break
-      case 'custom':
-        if (customDateRange.start && customDateRange.end) {
-          startDate = new Date(customDateRange.start)
-          endDate = new Date(customDateRange.end)
-        }
-        break
-    }
-
-    return visitStats.filter(stat => {
-      const statDate = new Date(stat.date)
-      return statDate >= startDate && statDate <= endDate
-    })
+  const cleanupVisitStats = () => {
+    localStorage.removeItem('admin-visit-stats')
+    showAlert('방문 통계 데이터가 삭제되었습니다.')
   }
+
 
   const getUserStats = () => {
     const totalUsers = users.length
@@ -148,21 +126,6 @@ export default function AdminPage() {
     }
   }
 
-  const getVisitSummary = () => {
-    const filteredStats = getFilteredStats()
-    const totalVisits = filteredStats.reduce((sum, stat) => sum + stat.visits, 0)
-    const totalUniqueVisitors = filteredStats.reduce((sum, stat) => sum + stat.uniqueVisitors, 0)
-    const totalPageViews = filteredStats.reduce((sum, stat) => sum + stat.pageViews, 0)
-    const avgDaily = filteredStats.length > 0 ? Math.round(totalVisits / filteredStats.length) : 0
-
-    return {
-      totalVisits,
-      totalUniqueVisitors,
-      totalPageViews,
-      avgDaily,
-      days: filteredStats.length
-    }
-  }
 
   if (authLoading) {
     return (
@@ -191,7 +154,6 @@ export default function AdminPage() {
   }
 
   const userStats = getUserStats()
-  const visitSummary = getVisitSummary()
 
   return (
     <div className="container-main section-padding">
@@ -219,6 +181,16 @@ export default function AdminPage() {
                 대시보드 & 통계
               </button>
               <button
+                onClick={() => setActiveTab('members')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'members'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                회원 관리
+              </button>
+              <button
                 onClick={() => setActiveTab('mailing')}
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${
                   activeTab === 'mailing'
@@ -238,6 +210,36 @@ export default function AdminPage() {
               >
                 크루 관리
               </button>
+              <button
+                onClick={() => setActiveTab('crew-room')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'crew-room'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                크루룸 관리
+              </button>
+              <button
+                onClick={() => setActiveTab('news')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'news'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                소식 & 공지
+              </button>
+              <button
+                onClick={() => setActiveTab('inquiry')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'inquiry'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                문의 관리
+              </button>
             </nav>
           </div>
         </div>
@@ -245,14 +247,12 @@ export default function AdminPage() {
         {activeTab === 'dashboard' && (
           <DashboardTab
             userStats={userStats}
-            visitSummary={visitSummary}
-            selectedPeriod={selectedPeriod}
-            setSelectedPeriod={setSelectedPeriod}
-            customDateRange={customDateRange}
-            setCustomDateRange={setCustomDateRange}
-            statsPeriods={statsPeriods}
-            visitStats={getFilteredStats()}
+            onCleanupVisitStats={cleanupVisitStats}
           />
+        )}
+
+        {activeTab === 'members' && (
+          <MembersManagementTab users={users} setUsers={setUsers} />
         )}
 
         {activeTab === 'mailing' && (
@@ -261,6 +261,24 @@ export default function AdminPage() {
 
         {activeTab === 'crew' && (
           <CrewManagementTab users={users} currentUser={user!} />
+        )}
+
+        {activeTab === 'crew-room' && (
+          <CrewRoomManagementTab currentUser={user!} />
+        )}
+
+        {activeTab === 'news' && (
+          <NewsManagementTab news={news} setNews={setNews} currentUser={user!} />
+        )}
+
+        {activeTab === 'inquiry' && (
+          <InquiryManagementTab 
+            generalInquiries={generalInquiries} 
+            setGeneralInquiries={setGeneralInquiries}
+            donationInquiries={donationInquiries}
+            setDonationInquiries={setDonationInquiries}
+            currentUser={user!} 
+          />
         )}
       </div>
     </div>
@@ -279,30 +297,12 @@ interface DashboardTabProps {
     malePercentage: number
     femalePercentage: number
   }
-  visitSummary: {
-    totalVisits: number
-    totalUniqueVisitors: number
-    totalPageViews: number
-    avgDaily: number
-    days: number
-  }
-  selectedPeriod: StatsPeriod['value']
-  setSelectedPeriod: (period: StatsPeriod['value']) => void
-  customDateRange: { start: string; end: string }
-  setCustomDateRange: React.Dispatch<React.SetStateAction<{ start: string; end: string }>>
-  statsPeriods: StatsPeriod[]
-  visitStats: VisitStats[]
+  onCleanupVisitStats: () => void
 }
 
 function DashboardTab({
   userStats,
-  visitSummary,
-  selectedPeriod,
-  setSelectedPeriod,
-  customDateRange,
-  setCustomDateRange,
-  statsPeriods,
-  visitStats
+  onCleanupVisitStats
 }: DashboardTabProps) {
   return (
     <div className="space-y-8">
@@ -415,103 +415,24 @@ function DashboardTab({
         </Card>
       </div>
 
-      {/* Visit Statistics */}
+      {/* Maintenance Section */}
       <div>
-        <h2 className="heading-2 mb-6">방문 통계</h2>
-        
-        {/* Period Selector */}
-        <Card className="p-6 mb-6">
-          <div className="flex flex-wrap items-center gap-4 mb-4">
-            <span className="text-sm font-medium text-gray-700">기간 선택:</span>
-            {statsPeriods.map(period => (
-              <button
-                key={period.value}
-                onClick={() => setSelectedPeriod(period.value)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  selectedPeriod === period.value
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {period.label}
-              </button>
-            ))}
-          </div>
-          
-          {selectedPeriod === 'custom' && (
-            <div className="flex items-center gap-4">
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">시작일</label>
-                <input
-                  type="date"
-                  value={customDateRange.start}
-                  onChange={(e) => setCustomDateRange(prev => ({ ...prev, start: e.target.value }))}
-                  className="input-field"
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">종료일</label>
-                <input
-                  type="date"
-                  value={customDateRange.end}
-                  onChange={(e) => setCustomDateRange(prev => ({ ...prev, end: e.target.value }))}
-                  className="input-field"
-                />
-              </div>
-            </div>
-          )}
-        </Card>
-
-        {/* Visit Summary */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-          <Card className="p-6">
-            <div className="text-center">
-              <p className="text-3xl font-bold text-blue-600">{visitSummary.totalVisits}</p>
-              <p className="text-sm text-gray-600 mt-1">총 방문수</p>
-            </div>
-          </Card>
-          <Card className="p-6">
-            <div className="text-center">
-              <p className="text-3xl font-bold text-emerald-600">{visitSummary.totalUniqueVisitors}</p>
-              <p className="text-sm text-gray-600 mt-1">순 방문자</p>
-            </div>
-          </Card>
-          <Card className="p-6">
-            <div className="text-center">
-              <p className="text-3xl font-bold text-amber-600">{visitSummary.totalPageViews}</p>
-              <p className="text-sm text-gray-600 mt-1">페이지뷰</p>
-            </div>
-          </Card>
-          <Card className="p-6">
-            <div className="text-center">
-              <p className="text-3xl font-bold text-purple-600">{visitSummary.avgDaily}</p>
-              <p className="text-sm text-gray-600 mt-1">일평균 방문</p>
-            </div>
-          </Card>
-        </div>
-
-        {/* Visit Chart */}
+        <h2 className="heading-2 mb-6">데이터 관리</h2>
         <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-4">방문 추이</h3>
-          <div className="h-64 flex items-end space-x-1 overflow-x-auto">
-            {visitStats.map((stat) => (
-              <div key={stat.id} className="flex-shrink-0 flex flex-col items-center">
-                <div 
-                  className="bg-blue-500 rounded-t w-8 min-h-[4px] hover:bg-blue-600 transition-colors relative group"
-                  style={{ height: `${(stat.visits / Math.max(...visitStats.map(s => s.visits))) * 200}px` }}
-                >
-                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-800 text-white text-xs rounded px-2 py-1 whitespace-nowrap">
-                    {stat.visits}회 방문
-                  </div>
-                </div>
-                <span className="text-xs text-gray-500 mt-2 transform -rotate-45 origin-left">
-                  {new Date(stat.date).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
-                </span>
-              </div>
-            ))}
-          </div>
+          <h3 className="text-lg font-semibold mb-4">시스템 정리</h3>
+          <p className="text-gray-600 mb-4">
+            더 이상 사용하지 않는 방문 통계 데이터를 정리할 수 있습니다.
+          </p>
+          <Button
+            onClick={onCleanupVisitStats}
+            variant="outline"
+            className="text-red-600 border-red-600 hover:bg-red-50"
+          >
+            방문 통계 데이터 삭제
+          </Button>
         </Card>
       </div>
+
     </div>
   )
 }
@@ -1030,6 +951,1062 @@ function HistoryTab({ emailHistory, users }: HistoryTabProps) {
           </div>
         )}
       </Card>
+    </div>
+  )
+}
+
+// News Management Tab Component
+interface NewsManagementTabProps {
+  news: News[]
+  setNews: React.Dispatch<React.SetStateAction<News[]>>
+  currentUser: User
+}
+
+function NewsManagementTab({ news, setNews, currentUser }: NewsManagementTabProps) {
+  const { showAlert } = useAlert()
+  const [activeSubTab, setActiveSubTab] = useState<'list' | 'create' | 'edit'>('list')
+  const [editingNews, setEditingNews] = useState<News | null>(null)
+  const [formData, setFormData] = useState({
+    title: '',
+    content: '',
+    category: 'news' as 'news' | 'notice',
+    featured: false
+  })
+
+  const saveNews = () => {
+    if (!formData.title.trim() || !formData.content.trim()) {
+      showAlert('제목과 내용을 모두 입력해주세요.')
+      return
+    }
+
+    if (editingNews) {
+      // Update existing news
+      const updatedNews = news.map(item => 
+        item.id === editingNews.id 
+          ? {
+              ...item,
+              title: formData.title,
+              content: formData.content,
+              category: formData.category,
+              featured: formData.featured,
+              updatedAt: new Date()
+            }
+          : item
+      )
+      setNews(updatedNews)
+      localStorage.setItem('dream-house-news', JSON.stringify(updatedNews))
+      showAlert('소식이 수정되었습니다.')
+    } else {
+      // Create new news
+      const newNews: News = {
+        id: `news_${Date.now()}`,
+        title: formData.title,
+        content: formData.content,
+        category: formData.category,
+        featured: formData.featured,
+        createdAt: new Date()
+      }
+      const updatedNews = [newNews, ...news]
+      setNews(updatedNews)
+      localStorage.setItem('dream-house-news', JSON.stringify(updatedNews))
+      showAlert('새 소식이 작성되었습니다.')
+    }
+
+    // Reset form
+    setFormData({
+      title: '',
+      content: '',
+      category: 'news',
+      featured: false
+    })
+    setEditingNews(null)
+    setActiveSubTab('list')
+  }
+
+  const editNews = (newsItem: News) => {
+    setEditingNews(newsItem)
+    setFormData({
+      title: newsItem.title,
+      content: newsItem.content,
+      category: newsItem.category,
+      featured: newsItem.featured || false
+    })
+    setActiveSubTab('edit')
+  }
+
+  const deleteNews = (newsId: string) => {
+    const updatedNews = news.filter(item => item.id !== newsId)
+    setNews(updatedNews)
+    localStorage.setItem('dream-house-news', JSON.stringify(updatedNews))
+    showAlert('소식이 삭제되었습니다.')
+  }
+
+  const cancelEdit = () => {
+    setEditingNews(null)
+    setFormData({
+      title: '',
+      content: '',
+      category: 'news',
+      featured: false
+    })
+    setActiveSubTab('list')
+  }
+
+  return (
+    <div>
+      <h2 className="heading-2 mb-6">소식 & 공지 관리</h2>
+      
+      {/* Sub Tab Navigation */}
+      <div className="mb-6">
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setActiveSubTab('list')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeSubTab === 'list'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              목록 관리
+            </button>
+            <button
+              onClick={() => setActiveSubTab('create')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeSubTab === 'create'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              새 글 작성
+            </button>
+          </nav>
+        </div>
+      </div>
+
+      {activeSubTab === 'list' && (
+        <NewsListTab 
+          news={news} 
+          onEdit={editNews} 
+          onDelete={deleteNews} 
+        />
+      )}
+
+      {(activeSubTab === 'create' || activeSubTab === 'edit') && (
+        <NewsFormTab
+          formData={formData}
+          setFormData={setFormData}
+          onSave={saveNews}
+          onCancel={cancelEdit}
+          isEditing={activeSubTab === 'edit'}
+        />
+      )}
+    </div>
+  )
+}
+
+// News List Tab Component
+interface NewsListTabProps {
+  news: News[]
+  onEdit: (news: News) => void
+  onDelete: (newsId: string) => void
+}
+
+function NewsListTab({ news, onEdit, onDelete }: NewsListTabProps) {
+  return (
+    <Card className="p-6">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold">게시글 목록</h3>
+        <span className="text-sm text-gray-500">총 {news.length}개</span>
+      </div>
+      
+      {news.length === 0 ? (
+        <p className="text-gray-500 text-center py-8">
+          작성된 소식이 없습니다.
+        </p>
+      ) : (
+        <div className="space-y-4">
+          {news.map((item) => (
+            <div key={item.id} className="border border-gray-200 rounded-lg p-4">
+              <div className="flex justify-between items-start mb-2">
+                <div className="flex items-center space-x-2">
+                  <span className={`px-2 py-1 text-xs rounded-full ${
+                    item.category === 'notice' 
+                      ? 'bg-red-100 text-red-700' 
+                      : 'bg-blue-100 text-blue-700'
+                  }`}>
+                    {item.category === 'notice' ? '공지' : '소식'}
+                  </span>
+                  {item.featured && (
+                    <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700">
+                      중요
+                    </span>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => onEdit(item)}
+                    className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
+                  >
+                    수정
+                  </button>
+                  <button
+                    onClick={() => onDelete(item.id)}
+                    className="text-sm bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors"
+                  >
+                    삭제
+                  </button>
+                </div>
+              </div>
+              
+              <h4 className="font-medium text-gray-900 mb-2">{item.title}</h4>
+              <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                {item.content.substring(0, 150)}...
+              </p>
+              
+              <div className="text-xs text-gray-500">
+                작성일: {new Date(item.createdAt).toLocaleDateString('ko-KR')}
+                {item.updatedAt && (
+                  <span className="ml-4">
+                    수정일: {new Date(item.updatedAt).toLocaleDateString('ko-KR')}
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
+  )
+}
+
+// News Form Tab Component
+interface NewsFormTabProps {
+  formData: {
+    title: string
+    content: string
+    category: 'news' | 'notice'
+    featured: boolean
+  }
+  setFormData: React.Dispatch<React.SetStateAction<{
+    title: string
+    content: string
+    category: 'news' | 'notice'
+    featured: boolean
+  }>>
+  onSave: () => void
+  onCancel: () => void
+  isEditing: boolean
+}
+
+function NewsFormTab({ formData, setFormData, onSave, onCancel, isEditing }: NewsFormTabProps) {
+  return (
+    <Card className="p-6">
+      <h3 className="text-lg font-semibold mb-4">
+        {isEditing ? '글 수정' : '새 글 작성'}
+      </h3>
+      
+      <div className="space-y-4">
+        {/* Category Selection */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            분류
+          </label>
+          <div className="flex gap-4">
+            <label className="flex items-center">
+              <input
+                type="radio"
+                name="category"
+                value="news"
+                checked={formData.category === 'news'}
+                onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value as 'news' | 'notice' }))}
+                className="mr-2"
+              />
+              소식
+            </label>
+            <label className="flex items-center">
+              <input
+                type="radio"
+                name="category"
+                value="notice"
+                checked={formData.category === 'notice'}
+                onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value as 'news' | 'notice' }))}
+                className="mr-2"
+              />
+              공지사항
+            </label>
+          </div>
+        </div>
+
+        {/* Featured Toggle */}
+        <div>
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={formData.featured}
+              onChange={(e) => setFormData(prev => ({ ...prev, featured: e.target.checked }))}
+              className="mr-2"
+            />
+            <span className="text-sm font-medium text-gray-700">중요 표시</span>
+          </label>
+        </div>
+
+        {/* Title */}
+        <div>
+          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+            제목
+          </label>
+          <input
+            type="text"
+            id="title"
+            value={formData.title}
+            onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+            className="input-field"
+            placeholder="제목을 입력하세요"
+          />
+        </div>
+        
+        {/* Content */}
+        <div>
+          <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
+            내용
+          </label>
+          <textarea
+            id="content"
+            value={formData.content}
+            onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
+            className="textarea-field"
+            rows={12}
+            placeholder="내용을 입력하세요"
+          />
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex gap-4 mt-6">
+        <Button
+          onClick={onSave}
+          disabled={!formData.title.trim() || !formData.content.trim()}
+          className="btn-primary"
+        >
+          {isEditing ? '수정 완료' : '작성 완료'}
+        </Button>
+        <Button
+          onClick={onCancel}
+          variant="outline"
+        >
+          취소
+        </Button>
+      </div>
+    </Card>
+  )
+}
+
+// Inquiry Management Tab Component
+interface InquiryManagementTabProps {
+  generalInquiries: GeneralInquiry[]
+  setGeneralInquiries: React.Dispatch<React.SetStateAction<GeneralInquiry[]>>
+  donationInquiries: DonationInquiry[]
+  setDonationInquiries: React.Dispatch<React.SetStateAction<DonationInquiry[]>>
+  currentUser: User
+}
+
+function InquiryManagementTab({ 
+  generalInquiries, 
+  setGeneralInquiries, 
+  donationInquiries, 
+  setDonationInquiries, 
+  currentUser 
+}: InquiryManagementTabProps) {
+  const { showAlert } = useAlert()
+  const [activeSubTab, setActiveSubTab] = useState<'general' | 'donation'>('general')
+  const [selectedInquiry, setSelectedInquiry] = useState<GeneralInquiry | null>(null)
+  const [replyContent, setReplyContent] = useState('')
+  const [isReplying, setIsReplying] = useState(false)
+
+  const addReply = (inquiryId: string) => {
+    if (!replyContent.trim()) {
+      showAlert('답변 내용을 입력해주세요.')
+      return
+    }
+
+    const newReply = {
+      id: `reply_${Date.now()}`,
+      content: replyContent,
+      author: currentUser.name,
+      isOfficial: true,
+      createdAt: new Date()
+    }
+
+    const updatedInquiries = generalInquiries.map(inquiry =>
+      inquiry.id === inquiryId
+        ? { ...inquiry, replies: [...(inquiry.replies || []), newReply] }
+        : inquiry
+    )
+
+    setGeneralInquiries(updatedInquiries)
+    localStorage.setItem('general-inquiries', JSON.stringify(updatedInquiries))
+    
+    setReplyContent('')
+    setIsReplying(false)
+    setSelectedInquiry(null)
+    showAlert('답변이 등록되었습니다.')
+  }
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case '교육프로그램':
+        return 'bg-blue-100 text-blue-700'
+      case '시설이용':
+        return 'bg-green-100 text-green-700'
+      default:
+        return 'bg-gray-100 text-gray-700'
+    }
+  }
+
+  const getDonationTypeColor = (type: string) => {
+    switch (type) {
+      case 'corporate':
+        return 'bg-purple-100 text-purple-700'
+      case 'material':
+        return 'bg-orange-100 text-orange-700'
+      case 'equipment':
+        return 'bg-indigo-100 text-indigo-700'
+      default:
+        return 'bg-pink-100 text-pink-700'
+    }
+  }
+
+  const getDonationTypeName = (type: string) => {
+    switch (type) {
+      case 'corporate':
+        return '기업후원'
+      case 'material':
+        return '물품후원'
+      case 'equipment':
+        return '장비후원'
+      default:
+        return '개인후원'
+    }
+  }
+
+  return (
+    <div>
+      <h2 className="heading-2 mb-6">문의 관리</h2>
+      
+      {/* Sub Tab Navigation */}
+      <div className="mb-6">
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setActiveSubTab('general')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeSubTab === 'general'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              일반 문의 ({generalInquiries.length})
+            </button>
+            <button
+              onClick={() => setActiveSubTab('donation')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeSubTab === 'donation'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              후원 문의 ({donationInquiries.length})
+            </button>
+          </nav>
+        </div>
+      </div>
+
+      {activeSubTab === 'general' && (
+        <GeneralInquiryListTab
+          inquiries={generalInquiries}
+          onReply={(inquiry) => {
+            setSelectedInquiry(inquiry)
+            setIsReplying(true)
+          }}
+          formatDate={formatDate}
+          getCategoryColor={getCategoryColor}
+        />
+      )}
+
+      {activeSubTab === 'donation' && (
+        <DonationInquiryListTab
+          inquiries={donationInquiries}
+          formatDate={formatDate}
+          getDonationTypeColor={getDonationTypeColor}
+          getDonationTypeName={getDonationTypeName}
+        />
+      )}
+
+      {/* Reply Modal */}
+      {isReplying && selectedInquiry && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-6 border w-full max-w-2xl shadow-lg rounded-lg bg-white">
+            <h3 className="text-lg font-semibold mb-4">문의 답변</h3>
+            
+            {/* 원본 문의 */}
+            <div className="bg-gray-50 rounded-lg p-4 mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className={`px-2 py-1 text-xs rounded-full ${getCategoryColor(selectedInquiry.category)}`}>
+                  {selectedInquiry.category}
+                </span>
+                <span className="text-sm text-gray-500">{formatDate(selectedInquiry.createdAt)}</span>
+              </div>
+              <h4 className="font-medium text-gray-900 mb-2">{selectedInquiry.title}</h4>
+              <p className="text-sm text-gray-700 mb-2">작성자: {selectedInquiry.name} ({selectedInquiry.email})</p>
+              <p className="text-gray-700 whitespace-pre-wrap">{selectedInquiry.content}</p>
+            </div>
+
+            {/* 답변 입력 */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  답변 내용
+                </label>
+                <textarea
+                  value={replyContent}
+                  onChange={(e) => setReplyContent(e.target.value)}
+                  className="textarea-field"
+                  rows={6}
+                  placeholder="답변 내용을 입력하세요..."
+                />
+              </div>
+              
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => addReply(selectedInquiry.id)}
+                  disabled={!replyContent.trim()}
+                  className="btn-primary"
+                >
+                  답변 등록
+                </Button>
+                <Button
+                  onClick={() => {
+                    setIsReplying(false)
+                    setSelectedInquiry(null)
+                    setReplyContent('')
+                  }}
+                  variant="outline"
+                >
+                  취소
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// General Inquiry List Tab Component
+interface GeneralInquiryListTabProps {
+  inquiries: GeneralInquiry[]
+  onReply: (inquiry: GeneralInquiry) => void
+  formatDate: (date: Date) => string
+  getCategoryColor: (category: string) => string
+}
+
+function GeneralInquiryListTab({ inquiries, onReply, formatDate, getCategoryColor }: GeneralInquiryListTabProps) {
+  return (
+    <Card className="p-6">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold">일반 문의 목록</h3>
+        <span className="text-sm text-gray-500">총 {inquiries.length}개</span>
+      </div>
+      
+      {inquiries.length === 0 ? (
+        <p className="text-gray-500 text-center py-8">
+          등록된 문의가 없습니다.
+        </p>
+      ) : (
+        <div className="space-y-4">
+          {inquiries.map((inquiry) => (
+            <div key={inquiry.id} className="border border-gray-200 rounded-lg p-4">
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex items-center gap-3">
+                  <span className={`px-2 py-1 text-xs rounded-full ${getCategoryColor(inquiry.category)}`}>
+                    {inquiry.category}
+                  </span>
+                  {!inquiry.isPublic && (
+                    <span className="px-2 py-1 text-xs rounded-full bg-red-100 text-red-700">
+                      비공개
+                    </span>
+                  )}
+                  <span className="text-sm text-gray-500">{formatDate(inquiry.createdAt)}</span>
+                </div>
+                <button
+                  onClick={() => onReply(inquiry)}
+                  className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
+                >
+                  답변하기
+                </button>
+              </div>
+              
+              <h4 className="font-medium text-gray-900 mb-2">{inquiry.title}</h4>
+              <p className="text-sm text-gray-600 mb-3">
+                작성자: {inquiry.name} ({inquiry.email})
+              </p>
+              <p className="text-gray-700 mb-3 whitespace-pre-wrap line-clamp-3">
+                {inquiry.content}
+              </p>
+              
+              {inquiry.replies && inquiry.replies.length > 0 && (
+                <div className="border-t pt-3">
+                  <p className="text-sm text-blue-600 mb-2">
+                    답변 {inquiry.replies.length}개
+                  </p>
+                  <div className="space-y-2">
+                    {inquiry.replies.map((reply) => (
+                      <div key={reply.id} className="bg-blue-50 rounded p-3">
+                        <div className="flex justify-between items-start mb-1">
+                          <span className="text-sm font-medium text-blue-700">
+                            {reply.author} (관리자)
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {formatDate(reply.createdAt)}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                          {reply.content}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
+  )
+}
+
+// Donation Inquiry List Tab Component
+interface DonationInquiryListTabProps {
+  inquiries: DonationInquiry[]
+  formatDate: (date: Date) => string
+  getDonationTypeColor: (type: string) => string
+  getDonationTypeName: (type: string) => string
+}
+
+function DonationInquiryListTab({ inquiries, formatDate, getDonationTypeColor, getDonationTypeName }: DonationInquiryListTabProps) {
+  return (
+    <Card className="p-6">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold">후원 문의 목록</h3>
+        <span className="text-sm text-gray-500">총 {inquiries.length}개</span>
+      </div>
+      
+      {inquiries.length === 0 ? (
+        <p className="text-gray-500 text-center py-8">
+          등록된 후원 문의가 없습니다.
+        </p>
+      ) : (
+        <div className="space-y-4">
+          {inquiries.map((inquiry) => (
+            <div key={inquiry.id} className="border border-gray-200 rounded-lg p-4">
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex items-center gap-3">
+                  <span className={`px-2 py-1 text-xs rounded-full ${getDonationTypeColor(inquiry.donationType)}`}>
+                    {getDonationTypeName(inquiry.donationType)}
+                  </span>
+                  <span className="text-sm text-gray-500">{formatDate(inquiry.createdAt)}</span>
+                </div>
+              </div>
+              
+              <div className="grid md:grid-cols-2 gap-4 mb-3">
+                <div>
+                  <p className="text-sm text-gray-600">
+                    <span className="font-medium">이름:</span> {inquiry.name}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <span className="font-medium">이메일:</span> {inquiry.email}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <span className="font-medium">연락처:</span> {inquiry.phone}
+                  </p>
+                </div>
+                {inquiry.company && (
+                  <div>
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">기업/단체명:</span> {inquiry.company}
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="border-t pt-3">
+                <p className="text-sm font-medium text-gray-700 mb-2">문의 내용:</p>
+                <p className="text-gray-700 whitespace-pre-wrap">
+                  {inquiry.message}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
+  )
+}
+
+// Members Management Tab Component
+interface MembersManagementTabProps {
+  users: User[]
+  setUsers: React.Dispatch<React.SetStateAction<User[]>>
+}
+
+function MembersManagementTab({ users, setUsers }: MembersManagementTabProps) {
+  const { showAlert } = useAlert()
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterRole, setFilterRole] = useState<'all' | 'member' | 'crew' | 'admin'>('all')
+  const [filterGender, setFilterGender] = useState<'all' | 'male' | 'female' | 'other'>('all')
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const [isViewingDetail, setIsViewingDetail] = useState(false)
+
+  // 회원 필터링
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = searchTerm === '' || 
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.phone.includes(searchTerm)
+    
+    const matchesRole = filterRole === 'all' || user.role === filterRole
+    const matchesGender = filterGender === 'all' || user.gender === filterGender
+    
+    return matchesSearch && matchesRole && matchesGender
+  })
+
+
+  // 역할 변경
+  const changeUserRole = (userId: string, newRole: 'member' | 'crew' | 'admin') => {
+    const updatedUsers = users.map(u => 
+      u.id === userId ? { ...u, role: newRole } : u
+    )
+    setUsers(updatedUsers)
+    localStorage.setItem('dream-house-users', JSON.stringify(updatedUsers))
+    showAlert('회원 역할이 변경되었습니다.')
+  }
+
+  const getRoleBadge = (role: string) => {
+    switch (role) {
+      case 'admin':
+        return 'bg-red-100 text-red-700'
+      case 'crew':
+        return 'bg-emerald-100 text-emerald-700'
+      default:
+        return 'bg-blue-100 text-blue-700'
+    }
+  }
+
+  const getRoleName = (role: string) => {
+    switch (role) {
+      case 'admin':
+        return '관리자'
+      case 'crew':
+        return '크루'
+      default:
+        return '일반회원'
+    }
+  }
+
+  const getGenderText = (gender: string) => {
+    switch (gender) {
+      case 'male':
+        return '남성'
+      case 'female':
+        return '여성'
+      default:
+        return '기타'
+    }
+  }
+
+  const formatDate = (date: Date) => {
+    return new Date(date).toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    })
+  }
+
+  return (
+    <div>
+      <h2 className="heading-2 mb-6">회원 관리</h2>
+      
+      {/* 검색 및 필터 */}
+      <Card className="p-6 mb-6">
+        <div className="space-y-4">
+          {/* 검색 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              회원 검색
+            </label>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="이름, 이메일, 전화번호로 검색"
+              className="input-field"
+            />
+          </div>
+          
+          {/* 필터 */}
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                회원 유형
+              </label>
+              <select
+                value={filterRole}
+                onChange={(e) => setFilterRole(e.target.value as any)}
+                className="input-field"
+              >
+                <option value="all">전체</option>
+                <option value="member">일반회원</option>
+                <option value="crew">크루</option>
+                <option value="admin">관리자</option>
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                성별
+              </label>
+              <select
+                value={filterGender}
+                onChange={(e) => setFilterGender(e.target.value as any)}
+                className="input-field"
+              >
+                <option value="all">전체</option>
+                <option value="male">남성</option>
+                <option value="female">여성</option>
+                <option value="other">기타</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* 회원 목록 */}
+      <Card className="p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">회원 목록</h3>
+          <span className="text-sm text-gray-500">
+            총 {filteredUsers.length}명 / 전체 {users.length}명
+          </span>
+        </div>
+        
+        {filteredUsers.length === 0 ? (
+          <p className="text-gray-500 text-center py-8">
+            검색 결과가 없습니다.
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    이름
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    이메일
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    전화번호
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    성별
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    역할
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    가입일
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    관리
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredUsers.map((user) => (
+                  <tr key={user.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        {user.name}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{user.email}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{user.phone}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {getGenderText(user.gender)}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 text-xs rounded-full ${getRoleBadge(user.role)}`}>
+                        {getRoleName(user.role)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {formatDate(user.createdAt)}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <button
+                        onClick={() => {
+                          setSelectedUser(user)
+                          setIsViewingDetail(true)
+                        }}
+                        className="text-blue-600 hover:text-blue-900"
+                      >
+                        상세보기
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+
+      {/* 회원 상세 보기 모달 */}
+      {isViewingDetail && selectedUser && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-6 border w-full max-w-2xl shadow-lg rounded-lg bg-white">
+            <h3 className="text-lg font-semibold mb-4">회원 상세 정보</h3>
+            
+            <div className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">이름</p>
+                  <p className="text-sm text-gray-900">{selectedUser.name}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500">성별</p>
+                  <p className="text-sm text-gray-900">{getGenderText(selectedUser.gender)}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500">이메일</p>
+                  <p className="text-sm text-gray-900">{selectedUser.email}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500">전화번호</p>
+                  <p className="text-sm text-gray-900">{selectedUser.phone}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500">가입 경로</p>
+                  <p className="text-sm text-gray-900">{selectedUser.joinPath}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500">가입일</p>
+                  <p className="text-sm text-gray-900">{formatDate(selectedUser.createdAt)}</p>
+                </div>
+              </div>
+              
+              <div>
+                <p className="text-sm font-medium text-gray-500 mb-1">첫 인상</p>
+                <p className="text-sm text-gray-900 bg-gray-50 p-3 rounded">
+                  {selectedUser.firstImpression}
+                </p>
+              </div>
+
+              {/* 역할 변경 */}
+              {selectedUser.id !== 'admin_default' && (
+                <div>
+                  <p className="text-sm font-medium text-gray-500 mb-2">회원 역할</p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        changeUserRole(selectedUser.id, 'member')
+                        setSelectedUser({ ...selectedUser, role: 'member' })
+                      }}
+                      className={`px-3 py-1 rounded text-sm ${
+                        selectedUser.role === 'member'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                    >
+                      일반회원
+                    </button>
+                    <button
+                      onClick={() => {
+                        changeUserRole(selectedUser.id, 'crew')
+                        setSelectedUser({ ...selectedUser, role: 'crew' })
+                      }}
+                      className={`px-3 py-1 rounded text-sm ${
+                        selectedUser.role === 'crew'
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                    >
+                      크루
+                    </button>
+                    <button
+                      onClick={() => {
+                        changeUserRole(selectedUser.id, 'admin')
+                        setSelectedUser({ ...selectedUser, role: 'admin' })
+                      }}
+                      className={`px-3 py-1 rounded text-sm ${
+                        selectedUser.role === 'admin'
+                          ? 'bg-red-600 text-white'
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                    >
+                      관리자
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* 크루 상태 */}
+              {selectedUser.role === 'crew' && (
+                <div>
+                  <p className="text-sm font-medium text-gray-500">크루 상태</p>
+                  <p className="text-sm text-gray-900">
+                    {selectedUser.crewStatus === 'approved' ? '승인됨' : 
+                     selectedUser.crewStatus === 'pending' ? '대기중' : '거절됨'}
+                  </p>
+                </div>
+              )}
+            </div>
+            
+            <div className="mt-6 flex gap-3">
+              <Button
+                onClick={() => {
+                  setIsViewingDetail(false)
+                  setSelectedUser(null)
+                }}
+                variant="outline"
+              >
+                닫기
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

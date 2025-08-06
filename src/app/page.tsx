@@ -3,76 +3,33 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { homeImageGroups } from '@/lib/home-images'
+import AnimatedHeroText from '@/components/ui/AnimatedHeroText'
 
 export default function Home() {
   return (
     <>
       {/* Hero Section */}
       <section className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden">
-        {/* Background GIF */}
+        {/* Background Video */}
         <div className="absolute inset-0 z-0">
-          <Image
-            src="/images/home/hero.gif"
-            alt="꿈을짓는학교 배경"
-            fill
-            className="object-cover"
-            sizes="100vw"
-            priority
-          />
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover"
+            preload="auto"
+          >
+            <source src="https://oprwxbtukrafehaotgqm.supabase.co/storage/v1/object/public/sales-storage//test.mp4" type="video/mp4" />
+          </video>
           {/* Overlay for better text readability */}
           <div className="absolute inset-0 bg-black/50"></div>
         </div>
 
         {/* Hero Content */}
         <div className="relative z-10 text-center text-white px-4 max-w-5xl mx-auto hero-content">
-          {/* Main Heading */}
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight drop-shadow-2xl" style={{textShadow: '2px 2px 8px rgba(0,0,0,0.8), 0px 0px 20px rgba(0,0,0,0.6)'}}>
-            함께 <span className="text-blue-200 animate-pulse drop-shadow-lg">꿈</span>을 짓는
-            <br />
-            <span className="text-amber-200 drop-shadow-lg">학교</span>
-          </h1>
-          
-          {/* Subtitle */}
-          <p className="text-xl md:text-2xl mb-8 text-white font-medium leading-relaxed max-w-4xl mx-auto drop-shadow-lg" style={{textShadow: '1px 1px 4px rgba(0,0,0,0.8)'}}>
-            <span className="text-blue-100 font-semibold">배움의 행복을 전하고 삶의 가치를 나누는</span><br />
-            사회적협동조합으로<br />
-            <span className="text-blue-100">품성교육 + 이론 + 실기</span>가 복합된 키자니아식 교육을 통해<br />
-            <span className="text-white font-semibold">도서지역 청소년들의 전인적 성장</span>을 돕습니다
-          </p>
-          
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Link 
-              href="/programs" 
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-4 rounded-lg transition-all duration-300 hover:scale-105 shadow-2xl hover:shadow-blue-500/30 border border-blue-500/50"
-              style={{textShadow: '1px 1px 2px rgba(0,0,0,0.5)'}}
-            >
-              교육프로그램 둘러보기
-            </Link>
-            <Link 
-              href="/about" 
-              className="bg-white/25 backdrop-blur-enhanced hover:bg-white/35 text-white font-bold px-8 py-4 rounded-lg border-2 border-white/50 hover:border-white/70 transition-all duration-300 hover:scale-105 shadow-2xl"
-              style={{textShadow: '1px 1px 2px rgba(0,0,0,0.7)'}}
-            >
-              꿈을짓는학교 소개
-            </Link>
-          </div>
-          
-          {/* Key Highlights */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            <div className="bg-white/15 backdrop-blur-enhanced rounded-lg p-6 border-2 border-white/30 hover:bg-white/25 hover:border-white/50 transition-all duration-300 shadow-2xl">
-              <div className="text-3xl font-bold text-white mb-2 drop-shadow-lg" style={{textShadow: '2px 2px 4px rgba(0,0,0,0.8)'}}>11명</div>
-              <div className="text-white font-semibold drop-shadow-md" style={{textShadow: '1px 1px 2px rgba(0,0,0,0.7)'}}>전문 조합원</div>
-            </div>
-            <div className="bg-white/15 backdrop-blur-enhanced rounded-lg p-6 border-2 border-white/30 hover:bg-white/25 hover:border-white/50 transition-all duration-300 shadow-2xl">
-              <div className="text-3xl font-bold text-white mb-2 drop-shadow-lg" style={{textShadow: '2px 2px 4px rgba(0,0,0,0.8)'}}>5가지</div>
-              <div className="text-white font-semibold drop-shadow-md" style={{textShadow: '1px 1px 2px rgba(0,0,0,0.7)'}}>주요 교육사업</div>
-            </div>
-            <div className="bg-white/15 backdrop-blur-enhanced rounded-lg p-6 border-2 border-white/30 hover:bg-white/25 hover:border-white/50 transition-all duration-300 shadow-2xl">
-              <div className="text-3xl font-bold text-white mb-2 drop-shadow-lg" style={{textShadow: '2px 2px 4px rgba(0,0,0,0.8)'}}>2022년</div>
-              <div className="text-white font-semibold drop-shadow-md" style={{textShadow: '1px 1px 2px rgba(0,0,0,0.7)'}}>설립</div>
-            </div>
-          </div>
+          {/* Animated Main Text */}
+          <AnimatedHeroText />
         </div>
 
         {/* Scroll Down Indicator */}

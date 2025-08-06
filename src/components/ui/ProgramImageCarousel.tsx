@@ -7,7 +7,7 @@ import Image from 'next/image'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface ProgramImageCarouselProps {
-  images: string[]
+  images: readonly string[]
   programTitle: string
   className?: string
 }

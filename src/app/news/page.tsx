@@ -12,23 +12,46 @@ function NewsContent() {
   const searchParams = useSearchParams()
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'news' | 'notice'>('all')
   const [selectedNews, setSelectedNews] = useState<News | null>(null)
+  const [newsData, setNewsData] = useState<News[]>([])
+
+  // 뉴스 데이터 로드
+  useEffect(() => {
+    const loadNewsData = () => {
+      const savedNews = localStorage.getItem('dream-house-news')
+      if (savedNews) {
+        const parsedNews = JSON.parse(savedNews)
+        // Date 객체로 변환
+        const newsWithDates = parsedNews.map((news: any) => ({
+          ...news,
+          createdAt: new Date(news.createdAt),
+          updatedAt: news.updatedAt ? new Date(news.updatedAt) : undefined
+        }))
+        setNewsData(newsWithDates)
+      } else {
+        // localStorage에 mockNews 저장
+        localStorage.setItem('dream-house-news', JSON.stringify(mockNews))
+        setNewsData(mockNews)
+      }
+    }
+    loadNewsData()
+  }, [])
 
   // URL 파라미터에서 뉴스 ID 읽기
   useEffect(() => {
     const newsId = searchParams.get('id')
-    if (newsId) {
-      const news = mockNews.find(n => n.id === newsId)
+    if (newsId && newsData.length > 0) {
+      const news = newsData.find(n => n.id === newsId)
       if (news) {
         setSelectedNews(news)
       }
     } else {
       setSelectedNews(null)
     }
-  }, [searchParams])
+  }, [searchParams, newsData])
 
   const filteredNews = selectedCategory === 'all' 
-    ? mockNews 
-    : mockNews.filter(news => news.category === selectedCategory)
+    ? newsData 
+    : newsData.filter(news => news.category === selectedCategory)
 
   const sortedNews = filteredNews.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
 

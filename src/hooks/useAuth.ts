@@ -75,7 +75,7 @@ export function useAuth() {
     user,
     isLoading,
     isAuthenticated: !!user,
-    isCrew: user?.role === 'crew' && user?.crewStatus === 'approved',
+    isCrew: (user?.role === 'crew' && user?.crewStatus === 'approved') || user?.role === 'admin',
     isAdmin: user?.role === 'admin',
     login,
     logout,
