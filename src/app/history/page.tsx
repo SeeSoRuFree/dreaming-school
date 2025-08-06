@@ -58,18 +58,61 @@ export default function HistoryPage() {
     },
     {
       year: "2022",
-      title: "사회적기업 기반 구축",
+      title: "사회적협동조합 창립",
       icon: <Building2 className="w-6 h-6" />,
       color: "from-blue-600 to-indigo-600",
       highlights: [
-        "꿈을짓는학교사회적협동조합 창립",
-        "사회적기업 설립인가 취득",
-        "교육부 인가 및 사업자 등록"
+        "꿈을짓는학교사회적협동조합 창립 (5월)",
+        "사회적기업 설립인가 취득 (8월)",
+        "사업자 등록 완료 (9월)"
       ],
       programs: [
-        "신등고 집짓기 프로그램 시작",
+        "신동고 한별 집짓기 시작",
         "민들레학교 한별 집짓기",
-        "산청초조(간디학교) 한별 집짓기"
+        "산청초조(간디학교) 한별 집짓기",
+        "신전초 한별 집짓기"
+      ],
+      details: [
+        "사회적기업가 최종 선정 (2월)",
+        "중간평가 최우수 선정 (7월)"
+      ]
+    },
+    {
+      year: "2021",
+      title: "교육 사업 본격화",
+      icon: <Users className="w-6 h-6" />,
+      color: "from-green-600 to-emerald-600",
+      highlights: [
+        "제1차 건축강사 양성과정 수료 (15명)",
+        "제2차 건축강사 양성과정 수료 (12명)",
+        "사회적기업 예비창업 교육 수료"
+      ],
+      programs: [
+        "진주초, 평거초, 명석초, 금곡초 집짓기",
+        "사천초, 곤선초, 동평초 집짓기",
+        "흥양초, 곤명초 집짓기"
+      ],
+      details: [
+        "사회적기업창업 멘토링 진행 (9월~12월)"
+      ]
+    },
+    {
+      year: "2020",
+      title: "한별 집짓기 프로그램 시작",
+      icon: <Home className="w-6 h-6" />,
+      color: "from-rose-600 to-pink-600",
+      highlights: [
+        "한별 집짓기 프로그램 개발 완료 (6월)",
+        "최초의 한별 집짓기 학교수업 시작",
+        "3개 학교에서 프로그램 운영"
+      ],
+      programs: [
+        "고성 봉천초등학교 (첫 번째 학교수업)",
+        "진주 진전초등학교",
+        "고성 동해초등학교"
+      ],
+      details: [
+        "특별학급 훌륭한조에 프로그램 홍보 (8월)"
       ]
     }
   ]
@@ -241,8 +284,8 @@ export default function HistoryPage() {
     <div className="container-main section-padding">
 
       {/* 연도별 주요 성과 섹션 - 상단 배치 */}
-      <div className="mb-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+      <div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
           {additionalHistory.map((yearData, index) => (
             <Card key={index} className="overflow-hidden hover:shadow-xl transition-all duration-300 border-0">
               <div className={`h-2 bg-gradient-to-r ${yearData.color}`}></div>
@@ -286,51 +329,25 @@ export default function HistoryPage() {
                       )}
                     </ul>
                   </div>
+                  
+                  {yearData.details && (
+                    <div>
+                      <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">추가 정보</h4>
+                      <ul className="space-y-1">
+                        {yearData.details.map((detail, idx) => (
+                          <li key={idx} className="text-sm text-gray-600 flex items-start gap-2">
+                            <Calendar className="w-3 h-3 text-gray-400 flex-shrink-0 mt-0.5" />
+                            <span className="leading-tight">{detail}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               </div>
             </Card>
           ))}
         </div>
-      </div>
-
-      {/* 구분선 */}
-      <div className="max-w-5xl mx-auto mb-16">
-        <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
-      </div>
-
-      {/* 상세 연혁 타임라인 - 최신순 */}
-      <div className="max-w-5xl mx-auto">
-        <h2 className="heading-2 text-center mb-12">상세 연혁</h2>
-        {Object.entries(historyByYear).reverse().map(([year, events]) => (
-          <div key={year} className="mb-12">
-            {/* 연도 헤더 */}
-            <div className="flex items-center gap-4 mb-6">
-              <div className="bg-blue-700 text-white text-2xl font-bold px-6 py-3 rounded-lg shadow-lg">
-                {year}
-              </div>
-              <div className="flex-1 h-1 bg-gradient-to-r from-blue-700 to-blue-100 rounded-full"></div>
-            </div>
-
-            {/* 해당 연도 이벤트들 */}
-            <div className="grid gap-3 ml-8">
-              {events.map((item, index) => (
-                <Card key={index} className="p-4 hover:shadow-md transition-shadow duration-200 border-l-4 border-blue-200">
-                  <div className="flex items-start gap-4">
-                    <div className={`p-2 rounded-lg ${getColorByType(item.type)}`}>
-                      {getIconByType(item.type)}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-baseline gap-3 mb-1">
-                        <span className="text-sm font-semibold text-blue-700">{item.month}</span>
-                      </div>
-                      <p className="text-gray-700">{item.event}</p>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
-        ))}
       </div>
     </div>
     </>
