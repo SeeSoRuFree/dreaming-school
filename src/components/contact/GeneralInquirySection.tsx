@@ -4,11 +4,13 @@ import { useState, useEffect } from 'react'
 import { GeneralInquiry } from '@/types'
 import { mockGeneralInquiries } from '@/lib/mock-data'
 import { useAlert } from '@/hooks/useAlert'
+import { Search } from 'lucide-react'
 
 export default function GeneralInquirySection() {
   const { showAlert } = useAlert()
   const [inquiries, setInquiries] = useState<GeneralInquiry[]>([])
-  const [showForm, setShowForm] = useState(false)
+  // showForm 상태 제거 - 항상 펼쳐져 있도록
+  const [searchQuery, setSearchQuery] = useState('')
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -50,7 +52,6 @@ export default function GeneralInquirySection() {
       category: '교육프로그램',
       isPublic: true
     })
-    setShowForm(false)
     showAlert('문의가 등록되었습니다.')
   }
 
@@ -62,27 +63,31 @@ export default function GeneralInquirySection() {
     })
   }
 
+  // 검색 필터링
+  const filteredInquiries = inquiries.filter(inquiry => {
+    if (!inquiry.isPublic) return false
+    if (searchQuery === '') return true
+    
+    const searchLower = searchQuery.toLowerCase()
+    return (
+      inquiry.title.toLowerCase().includes(searchLower) ||
+      inquiry.content.toLowerCase().includes(searchLower) ||
+      inquiry.name.toLowerCase().includes(searchLower)
+    )
+  })
+
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="heading-2">일반 문의</h2>
-          <p className="body-text text-gray-600 mt-2">
-            교육프로그램, 시설이용 등 궁금한 사항을 게시판에 남겨주세요
-          </p>
-        </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="btn-primary"
-        >
-          문의하기
-        </button>
+      <div>
+        <h2 className="heading-2">일반 문의</h2>
+        <p className="body-text text-gray-600 mt-2">
+          교육프로그램, 시설이용 등 궁금한 사항을 게시판에 남겨주세요
+        </p>
       </div>
 
-      {/* Form */}
-      {showForm && (
-        <div className="card">
+      {/* Form - 항상 표시 */}
+      <div className="card">
           <h3 className="heading-4 mb-6">새 문의 작성</h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
@@ -171,28 +176,56 @@ export default function GeneralInquirySection() {
               <button type="submit" className="btn-primary">
                 등록하기
               </button>
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="btn-secondary"
-              >
-                취소
-              </button>
             </div>
           </form>
+      </div>
+
+      {/* Search Section - Enhanced */}
+      <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-8 shadow-sm">
+        <div className="text-center mb-6">
+          <h3 className="heading-3 text-blue-900">문의 내역 검색</h3>
+          <p className="text-gray-600 mt-2">등록된 문의사항을 검색해보세요</p>
         </div>
-      )}
+        <div className="max-w-2xl mx-auto">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="제목, 내용, 작성자 이름으로 검색..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-14 pr-6 py-4 text-lg border-2 border-blue-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-300 focus:border-blue-400 shadow-md transition-all duration-200 hover:shadow-lg"
+            />
+            <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 text-blue-500 w-6 h-6" />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+          <div className="mt-4 flex justify-between items-center">
+            <p className="text-sm text-gray-600">
+              총 <span className="font-semibold text-blue-700">{filteredInquiries.length}</span>개의 문의가 검색되었습니다
+            </p>
+            {searchQuery && (
+              <p className="text-sm text-gray-500">
+                &apos;{searchQuery}&apos; 검색 결과
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Inquiries List */}
       <div className="space-y-4">
-        {inquiries.length === 0 ? (
+        {filteredInquiries.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
-            아직 등록된 문의가 없습니다.
+            {searchQuery ? '검색 결과가 없습니다.' : '아직 등록된 문의가 없습니다.'}
           </div>
         ) : (
-          inquiries
-            .filter(inquiry => inquiry.isPublic)
-            .map((inquiry) => (
+          filteredInquiries.map((inquiry) => (
               <div key={inquiry.id} className="card hover-lift">
                 <div className="flex justify-between items-start mb-3">
                   <div>

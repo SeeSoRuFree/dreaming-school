@@ -20,6 +20,7 @@ export interface News {
   createdAt: Date
   updatedAt?: Date
   featured?: boolean
+  imageUrl?: string
 }
 
 export interface Contact {

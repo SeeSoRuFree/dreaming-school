@@ -5,9 +5,9 @@ import Image from 'next/image'
 import { ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import ApplicationModal from '@/components/programs/ApplicationModal'
+import { Button } from '@/components/ui/button'
+import InfiniteScrollGallery from '@/components/ui/InfiniteScrollGallery'
 
 interface Session {
   order: number
@@ -29,18 +29,18 @@ const programDetails: Record<string, {
   sessions: Session[]
 }> = {
   '1': {
-    title: '소형 집짓기 체험교육',
-    subtitle: '세상에서 가장 위대한 한평 집짓기',
-    description: '세상에서 가장 위대한 한평 집 짓기는 인성교육과 함께 8주간 아이들이 직접 집을 지으며 꿈과 비전을 키우는 프로그램입니다.',
+    title: '세상에서 가장 위대한 한평 집짓기',
+    subtitle: '실제 집짓기 체험교육',
+    description: '세상에서 가장 위대한 한평 집 짓기는 인성교육과 함께 10주~12주간 아이들이 직접 집을 지으며 꿈과 비전을 키우는 프로그램입니다.',
     objectives: [
       '학생들이 주관하는 건축활동',
       '이론과 실습 조화로운 병행'
     ],
-    target: '초중고 학생',
-    duration: '8주 과정',
+    target: '초중고학생, 성인',
+    duration: '10주~12주간',
     maxParticipants: 20,
-    fee: '무료 (재료비 별도)',
-    location: '꿈을짓는학교 목공실',
+    fee: '문의',
+    location: '문의',
     sessions: [
       {
         order: 1,
@@ -107,188 +107,283 @@ const programDetails: Record<string, {
       },
       {
         order: 8,
+        title: '도색 및 페인트 작업',
+        description: '내외부 도색 및 마감 페인트',
+        images: [
+          '/images/program-detail/20201030_102755.jpg',
+          '/images/program-detail/20201030_102811.jpg',
+          '/images/program-detail/20201105_101304.jpg',
+          '/images/program-detail/20200910_095511.jpg'
+        ]
+      },
+      {
+        order: 9,
+        title: '조경 및 외부 환경 조성',
+        description: '주변 환경 정리 및 조경 작업',
+        images: [
+          '/images/program-detail/20201105_101304.jpg',
+          '/images/program-detail/20200910_095511.jpg',
+          '/images/program-detail/20200917_103041.jpg',
+          '/images/program-detail/20200917_103051.jpg'
+        ]
+      },
+      {
+        order: 10,
+        title: '최종 점검 및 보완',
+        description: '전체 구조 점검 및 세부 보완 작업',
+        images: [
+          '/images/program-detail/20200917_103041.jpg',
+          '/images/program-detail/20200917_103051.jpg',
+          '/images/program-detail/20200917_114233(0).jpg',
+          '/images/program-detail/20200917_114245.jpg'
+        ]
+      },
+      {
+        order: 11,
+        title: '품평회 및 프레젠테이션',
+        description: '작업 과정 공유 및 학습 내용 발표',
+        images: [
+          '/images/program-detail/20201016_105805.jpg',
+          '/images/program-detail/20201016_110634.jpg',
+          '/images/program-detail/20201016_104806.jpg',
+          '/images/program-detail/20201015_101250.jpg'
+        ]
+      },
+      {
+        order: 12,
         title: '완공행사(수료식)',
         description: '소감문,사진전 - 완성된 집 견학 및 수료식',
         images: [
           '/images/program-detail/20201030_102755.jpg',
           '/images/program-detail/20201030_102811.jpg',
-          '/images/program-detail/20201105_101304.jpg'
+          '/images/program-detail/20201105_101304.jpg',
+          '/images/program-detail/20200918_112159.jpg'
         ]
       }
     ]
   },
   '2': {
+    title: '모형집짓기 체험교육 사업',
+    subtitle: '수준별 맞춤형 모형 집짓기 프로그램',
+    description: '연령과 수준에 맞는 다양한 모형 집짓기 프로그램을 통해 건축의 기초 원리를 이해하고 창의력과 공간 설계 능력을 키우는 체험 교육입니다.',
+    objectives: [
+      '건축 기초 원리 이해',
+      '공간 설계 및 창의력 개발',
+      '협동심과 성취감 함양'
+    ],
+    target: '초등학생 전 학년',
+    duration: '프로그램별 상이\n(2시간~3일)',
+    maxParticipants: 20,
+    fee: '문의',
+    location: '문의',
+    sessions: [
+      {
+        order: 1,
+        title: '벽걸이용 모형집짓기 (저학년용)',
+        description: '2시간 과정 - 이론교육 포함. 초등 저학년을 위한 간단한 벽걸이형 모형집 제작',
+        images: [
+          '/images/program/1/20200910_104741.jpg',
+          '/images/program/1/20200925_104354.jpg',
+          '/images/program/1/20200925_115529.jpg',
+          '/images/program/1/20201015_115153.jpg'
+        ]
+      },
+      {
+        order: 2,
+        title: '한평형 모형집짓기',
+        description: '3시간 과정 - 이론교육 포함. 한 평 크기의 모형집을 제작하며 건축의 기본 구조 학습',
+        images: [
+          '/images/program/1/20200925_104354.jpg',
+          '/images/program/1/20200925_115529.jpg',
+          '/images/program/1/20201015_115153.jpg',
+          '/images/program/1/20200910_104741.jpg'
+        ]
+      },
+      {
+        order: 3,
+        title: '두평형 모형집짓기',
+        description: '2일~3일 과정 - 단기수업 및 심화단계로 차수수업. 두 평 크기의 정교한 모형집 제작',
+        images: [
+          '/images/program/1/20201015_115153.jpg',
+          '/images/program/1/20200910_104741.jpg',
+          '/images/program/1/20200925_104354.jpg',
+          '/images/program/1/20200925_115529.jpg'
+        ]
+      }
+    ]
+  },
+  '3': {
+    title: '원예프로그램',
+    subtitle: '자연과 교감하는 창의 체험 교육',
+    description: '분경, 테라리움, 플렌테리어 등 다양한 원예 프로그램을 통해\n자연과 교감하고 창의력을 키우는 체험 교육입니다.',
+    objectives: [
+      '자연 친화적 감성 개발',
+      '창의력과 예술 감각 함양',
+      '집중력과 인내심 향상'
+    ],
+    target: '전 연령',
+    duration: '프로그램별 상이',
+    maxParticipants: 20,
+    fee: '문의',
+    location: '문의',
+    sessions: [
+      {
+        order: 1,
+        title: '분경수업',
+        description: '최소 소요시간: 1일(3시간)',
+        images: [
+          '/images/program/4/1620363947652-3.jpg',
+          '/images/program/4/IMG_8547.jpg',
+          '/images/program/1/20200925_115529.jpg',
+          '/images/program/4/KakaoTalk_20210605_133031925_07.jpg',
+          '/images/program/4/1620363947652-3.jpg',
+          '/images/program/4/IMG_8547.jpg'
+        ]
+      },
+      {
+        order: 2,
+        title: '테라리움수업',
+        description: '최소 소요시간: 1일(3시간)',
+        images: [
+          '/images/program/1/20200925_115529.jpg',
+          '/images/program/4/KakaoTalk_20210605_133031925_07.jpg',
+          '/images/program/4/1620363947652-3.jpg',
+          '/images/program/4/IMG_8547.jpg',
+          '/images/program/1/20200925_115529.jpg',
+          '/images/program/4/KakaoTalk_20210605_133031925_07.jpg'
+        ]
+      },
+      {
+        order: 3,
+        title: '플렌테리어수업',
+        description: '최소 소요시간: 1일(3시간)',
+        images: [
+          '/images/program/4/1620363947652-3.jpg',
+          '/images/program/4/IMG_8547.jpg',
+          '/images/program/1/20200925_115529.jpg',
+          '/images/program/4/KakaoTalk_20210605_133031925_07.jpg',
+          '/images/program/4/1620363947652-3.jpg',
+          '/images/program/4/IMG_8547.jpg'
+        ]
+      },
+      {
+        order: 4,
+        title: '정원만들기수업',
+        description: '최소 소요시간: 1일(2시간) - 3일',
+        images: [
+          '/images/program/1/20200925_115529.jpg',
+          '/images/program/4/KakaoTalk_20210605_133031925_07.jpg',
+          '/images/program/4/1620363947652-3.jpg',
+          '/images/program/4/IMG_8547.jpg',
+          '/images/program/1/20200925_115529.jpg',
+          '/images/program/4/KakaoTalk_20210605_133031925_07.jpg'
+        ]
+      },
+      {
+        order: 5,
+        title: '압화캐릭터수업',
+        description: '최소 소요시간: 1일(2시간)',
+        images: [
+          '/images/program/4/1620363947652-3.jpg',
+          '/images/program/4/IMG_8547.jpg',
+          '/images/program/1/20200925_115529.jpg',
+          '/images/program/4/KakaoTalk_20210605_133031925_07.jpg',
+          '/images/program/4/1620363947652-3.jpg',
+          '/images/program/4/IMG_8547.jpg'
+        ]
+      },
+      {
+        order: 6,
+        title: '리스화관수업',
+        description: '최소 소요시간: 1일(3시간)',
+        images: [
+          '/images/program/1/20200925_115529.jpg',
+          '/images/program/4/KakaoTalk_20210605_133031925_07.jpg',
+          '/images/program/4/1620363947652-3.jpg',
+          '/images/program/4/IMG_8547.jpg',
+          '/images/program/1/20200925_115529.jpg',
+          '/images/program/4/KakaoTalk_20210605_133031925_07.jpg'
+        ]
+      },
+      {
+        order: 7,
+        title: '축하꽃양초수업',
+        description: '최소 소요시간: 1일(3시간)',
+        images: [
+          '/images/program/4/1620363947652-3.jpg',
+          '/images/program/4/IMG_8547.jpg',
+          '/images/program/1/20200925_115529.jpg',
+          '/images/program/4/KakaoTalk_20210605_133031925_07.jpg',
+          '/images/program/4/1620363947652-3.jpg',
+          '/images/program/4/IMG_8547.jpg'
+        ]
+      },
+      {
+        order: 8,
+        title: '아로마 꽃 비누수업',
+        description: '최소 소요시간: 1일(3시간)',
+        images: [
+          '/images/program/1/20200925_115529.jpg',
+          '/images/program/4/KakaoTalk_20210605_133031925_07.jpg',
+          '/images/program/4/1620363947652-3.jpg',
+          '/images/program/4/IMG_8547.jpg',
+          '/images/program/1/20200925_115529.jpg',
+          '/images/program/4/KakaoTalk_20210605_133031925_07.jpg'
+        ]
+      },
+      {
+        order: 9,
+        title: '우드버닝화수업',
+        description: '최소 소요시간: 1일(4시간)',
+        images: [
+          '/images/program/4/1620363947652-3.jpg',
+          '/images/program/4/IMG_8547.jpg',
+          '/images/program/1/20200925_115529.jpg',
+          '/images/program/4/KakaoTalk_20210605_133031925_07.jpg',
+          '/images/program/4/1620363947652-3.jpg',
+          '/images/program/4/IMG_8547.jpg'
+        ]
+      }
+    ]
+  },
+  '7': {
     title: '과학창의교육 및 체험학습',
-    subtitle: 'IT 교육으로 미래를 만들어가는 창의력 개발',
-    description: '과학과 IT 기술을 융합하여 아이들의 창의력과 문제해결 능력을 키우는 체험 중심 교육 프로그램입니다.',
+    subtitle: '창의적 사고력을 키우는 체험 교육',
+    description: '과학 원리를 배우고 직접 만들어보는 체험 중심의 창의 교육 프로그램입니다.',
     objectives: [
       '과학적 사고력 증진',
       '창의적 문제해결 능력 향상'
     ],
     target: '초중고 학생',
-    duration: '6주 과정',
+    duration: '프로그램별 상이',
     maxParticipants: 15,
     fee: '무료 (재료비 별도)',
     location: '꿈을짓는학교 과학실',
     sessions: [
       {
         order: 1,
-        title: '과학의 기초',
-        description: '기초 과학 이론 학습 및 실험 도구 사용법',
+        title: '과학교육 - 비행기 원리 및 비행기 만들어 비행하기',
+        description: '',
         images: [
           '/images/program/2/20200917_103051.jpg',
-          '/images/program/2/20200917_114245.jpg'
-        ]
-      },
-      {
-        order: 2,
-        title: '비행기 원리 탐구',
-        description: '양력과 항력의 원리 이해 및 실험',
-        images: [
+          '/images/program/2/20200917_114245.jpg',
           '/images/program/2/20201015_101250.jpg',
-          '/images/program/2/20200917_103051.jpg'
-        ]
-      },
-      {
-        order: 3,
-        title: '비행기 제작',
-        description: '모형 비행기 설계 및 제작',
-        images: [
+          '/images/program/2/20200917_103051.jpg',
           '/images/program/2/20200917_114245.jpg',
           '/images/program/2/20201015_101250.jpg'
         ]
       },
       {
-        order: 4,
-        title: 'IT 메이커 교육',
-        description: '아두이노를 활용한 기초 코딩 학습',
-        images: [
-          '/images/program/2/20200917_103051.jpg',
-          '/images/program/2/20200917_114245.jpg'
-        ]
-      },
-      {
-        order: 5,
-        title: '영상 제작 기초',
-        description: '디지털 미디어 제작 및 편집 기초',
+        order: 2,
+        title: '창의목공',
+        description: '',
         images: [
           '/images/program/2/20201015_101250.jpg',
-          '/images/program/2/20200917_103051.jpg'
-        ]
-      },
-      {
-        order: 6,
-        title: '프로젝트 발표',
-        description: '개인/팀 프로젝트 발표 및 시연',
-        images: [
+          '/images/program/2/20200917_103051.jpg',
           '/images/program/2/20200917_114245.jpg',
-          '/images/program/2/20201015_101250.jpg'
-        ]
-      }
-    ]
-  },
-  '3': {
-    title: '공간 재창조 리모델링',
-    subtitle: '낡은 공간을 새롭게, 함께 만드는 변화',
-    description: '학교의 유휴공간을 학생들과 함께 교육적 환경으로 재창조하는 참여형 리모델링 프로그램입니다.',
-    objectives: [
-      '공간 설계 능력 개발',
-      '협업과 소통 능력 향상'
-    ],
-    target: '중고등학생',
-    duration: '10주 과정',
-    maxParticipants: 12,
-    fee: '무료',
-    location: '참여 학교 내',
-    sessions: [
-      {
-        order: 1,
-        title: '공간 분석',
-        description: '현재 공간의 문제점 파악 및 개선 방향 설정',
-        images: [
-          '/images/program/3/KakaoTalk_20211013_123434390_19.jpg',
-          '/images/program/3/KakaoTalk_20211013_123532460_14.jpg'
-        ]
-      },
-      {
-        order: 2,
-        title: '디자인 기획',
-        description: '공간 활용 아이디어 구상 및 설계',
-        images: [
-          '/images/program/3/KakaoTalk_20220604_102553556_01.jpg',
-          '/images/program/3/KakaoTalk_20220611_132307516_08.jpg'
-        ]
-      },
-      {
-        order: 3,
-        title: '재료 준비',
-        description: '필요한 재료 선정 및 준비',
-        images: [
-          '/images/program/3/KakaoTalk_20211013_123434390_19.jpg',
-          '/images/program/3/KakaoTalk_20211013_123532460_14.jpg'
-        ]
-      },
-      {
-        order: 4,
-        title: '철거 작업',
-        description: '기존 구조물 철거 및 정리',
-        images: [
-          '/images/program/3/KakaoTalk_20220604_102553556_01.jpg',
-          '/images/program/3/KakaoTalk_20220611_132307516_08.jpg'
-        ]
-      },
-      {
-        order: 5,
-        title: '기초 공사',
-        description: '바닥 및 벽면 기초 작업',
-        images: [
-          '/images/program/3/KakaoTalk_20211013_123434390_19.jpg',
-          '/images/program/3/KakaoTalk_20211013_123532460_14.jpg'
-        ]
-      },
-      {
-        order: 6,
-        title: '인테리어 작업',
-        description: '벽면 도색 및 장식 작업',
-        images: [
-          '/images/program/3/KakaoTalk_20220604_102553556_01.jpg',
-          '/images/program/3/KakaoTalk_20220611_132307516_08.jpg'
-        ]
-      },
-      {
-        order: 7,
-        title: '가구 제작',
-        description: '맞춤형 가구 제작 및 설치',
-        images: [
-          '/images/program/3/KakaoTalk_20211013_123434390_19.jpg',
-          '/images/program/3/KakaoTalk_20211013_123532460_14.jpg'
-        ]
-      },
-      {
-        order: 8,
-        title: '마감 작업',
-        description: '세부 마감 및 청소',
-        images: [
-          '/images/program/3/KakaoTalk_20220604_102553556_01.jpg',
-          '/images/program/3/KakaoTalk_20220611_132307516_08.jpg'
-        ]
-      },
-      {
-        order: 9,
-        title: '조명 설치',
-        description: '조명 계획 및 설치',
-        images: [
-          '/images/program/3/KakaoTalk_20211013_123434390_19.jpg',
-          '/images/program/3/KakaoTalk_20211013_123532460_14.jpg'
-        ]
-      },
-      {
-        order: 10,
-        title: '완성 및 개관식',
-        description: '공간 완성 및 개관 행사',
-        images: [
-          '/images/program/3/KakaoTalk_20220604_102553556_01.jpg',
-          '/images/program/3/KakaoTalk_20220611_132307516_08.jpg'
+          '/images/program/2/20201015_101250.jpg',
+          '/images/program/2/20200917_103051.jpg',
+          '/images/program/2/20200917_114245.jpg'
         ]
       }
     ]
@@ -321,7 +416,7 @@ const programDetails: Record<string, {
         title: '토양 준비',
         description: '텃밭 조성 및 토양 개량',
         images: [
-          '/images/program/4/IMG_8745.jpg',
+          '/images/program/1/20200925_115529.jpg',
           '/images/program/4/KakaoTalk_20210605_133031925_07.jpg'
         ]
       },
@@ -339,7 +434,7 @@ const programDetails: Record<string, {
         title: '물주기와 관리',
         description: '적절한 물주기와 일상 관리법',
         images: [
-          '/images/program/4/IMG_8745.jpg',
+          '/images/program/1/20200925_115529.jpg',
           '/images/program/4/KakaoTalk_20210605_133031925_07.jpg'
         ]
       },
@@ -357,7 +452,7 @@ const programDetails: Record<string, {
         title: '꽃밭 조성',
         description: '계절꽃 심기 및 화단 디자인',
         images: [
-          '/images/program/4/IMG_8745.jpg',
+          '/images/program/1/20200925_115529.jpg',
           '/images/program/4/KakaoTalk_20210605_133031925_07.jpg'
         ]
       },
@@ -375,7 +470,7 @@ const programDetails: Record<string, {
         title: '수확의 기쁨',
         description: '채소 수확 및 요리 체험',
         images: [
-          '/images/program/4/IMG_8745.jpg',
+          '/images/program/1/20200925_115529.jpg',
           '/images/program/4/KakaoTalk_20210605_133031925_07.jpg'
         ]
       },
@@ -393,96 +488,105 @@ const programDetails: Record<string, {
         title: '수확 축제',
         description: '텃밭 수확물 나눔 행사',
         images: [
-          '/images/program/4/IMG_8745.jpg',
+          '/images/program/1/20200925_115529.jpg',
           '/images/program/4/KakaoTalk_20210605_133031925_07.jpg'
         ]
       }
     ]
   },
   '5': {
-    title: '농촌활성화 주거역량강화',
+    title: '농촌활성화 사업',
     subtitle: '농촌에 새로운 활력을 불어넣는 프로젝트',
-    description: '농촌 지역의 주거 환경을 개선하고 다양한 체험 활동을 통해 농촌 활성화에 기여하는 프로그램입니다.',
+    description: '농촌 지역과 함께 성장하는 상생 프로그램을 통해 농촌 활성화에 기여합니다.',
     objectives: [
       '농촌 이해도 증진',
       '지역사회 공헌 의식 함양'
     ],
-    target: '중고등학생 및 대학생',
-    duration: '8주 과정',
+    target: '전 연령',
+    duration: '프로그램별 상이',
     maxParticipants: 15,
-    fee: '무료',
+    fee: '문의',
     location: '협력 농촌 마을',
     sessions: [
       {
         order: 1,
-        title: '농촌 이해하기',
-        description: '농촌의 현실과 가치 이해',
+        title: '농촌주민들과 함께하는 세상에서 가장 위대한 한평집짓기',
+        description: '농촌 지역 주민들과 함께 한평집을 지으며 공동체 의식을 함양하고 주거 환경을 개선합니다.',
         images: [
+          '/images/program/5/14.JPG',
+          '/images/program/5/20210521_095311.jpg',
+          '/images/program/5/5555.JPG',
+          '/images/program/5/GOPR0430.JPG',
           '/images/program/5/14.JPG',
           '/images/program/5/20210521_095311.jpg'
         ]
       },
       {
         order: 2,
-        title: '주거 실태 조사',
-        description: '농촌 주거 환경 현장 조사',
+        title: '농촌주민들과 함께하는 원예치유프로그램',
+        description: '원예 활동을 통해 농촌 주민들의 정서적 치유와 공동체 활성화를 도모합니다.',
         images: [
+          '/images/program/5/5555.JPG',
+          '/images/program/5/GOPR0430.JPG',
+          '/images/program/5/14.JPG',
+          '/images/program/5/20210521_095311.jpg',
           '/images/program/5/5555.JPG',
           '/images/program/5/GOPR0430.JPG'
         ]
       },
       {
         order: 3,
-        title: '개선 계획 수립',
-        description: '주거 환경 개선 방안 기획',
+        title: '함께하는 농촌지역 살리기 컨설팅',
+        description: '농촌 지역의 특성을 살린 맞춤형 발전 방안을 제시하고 실행을 지원합니다.',
         images: [
+          '/images/program/5/14.JPG',
+          '/images/program/5/20210521_095311.jpg',
+          '/images/program/5/5555.JPG',
+          '/images/program/5/GOPR0430.JPG',
           '/images/program/5/14.JPG',
           '/images/program/5/20210521_095311.jpg'
         ]
-      },
+      }
+    ]
+  },
+  '6': {
+    title: '공간 재창조 리모델링 사업',
+    subtitle: '우리가 만드는 새로운 공간',
+    description: '학교와 지역 공간을 학생들과 함께 리모델링하며 창의력과 협동심을 기르는 프로그램입니다.',
+    objectives: [
+      '공간 활용 능력 개발',
+      '협동과 소통 능력 향상'
+    ],
+    target: '중고등학생',
+    duration: '프로그램별 상이',
+    maxParticipants: 15,
+    fee: '무료 (재료비 지원)',
+    location: '프로젝트 현장',
+    sessions: [
       {
-        order: 4,
-        title: '기초 보수 작업',
-        description: '노후 주택 기초 보수',
+        order: 1,
+        title: '학교의 유휴공간을 교육적 환경으로 리모델링',
+        description: '운동장 환경 조성, 교실공간의 재창조 등 학교 공간을 새롭게 디자인하고 변화시킵니다.',
         images: [
-          '/images/program/5/5555.JPG',
-          '/images/program/5/GOPR0430.JPG'
+          '/images/program/3/KakaoTalk_20211013_123434390_19.jpg',
+          '/images/program/3/KakaoTalk_20211013_123532460_14.jpg',
+          '/images/program/3/KakaoTalk_20220604_102553556_01.jpg',
+          '/images/program/3/KakaoTalk_20220611_132307516_08.jpg',
+          '/images/program/3/KakaoTalk_20211013_123434390_19.jpg',
+          '/images/program/3/KakaoTalk_20211013_123532460_14.jpg'
         ]
       },
       {
-        order: 5,
-        title: '벽체 보강',
-        description: '단열 및 방수 작업',
+        order: 2,
+        title: '학생들과 함께하는 리모델링',
+        description: '실기, 이론, 인성의 복합교육을 통해 학생들이 직접 참여하는 공간 변화 프로젝트입니다.',
         images: [
-          '/images/program/5/14.JPG',
-          '/images/program/5/20210521_095311.jpg'
-        ]
-      },
-      {
-        order: 6,
-        title: '지붕 수리',
-        description: '지붕 보수 및 개량',
-        images: [
-          '/images/program/5/5555.JPG',
-          '/images/program/5/GOPR0430.JPG'
-        ]
-      },
-      {
-        order: 7,
-        title: '마을 가꾸기',
-        description: '공동 공간 정비 및 미화',
-        images: [
-          '/images/program/5/14.JPG',
-          '/images/program/5/20210521_095311.jpg'
-        ]
-      },
-      {
-        order: 8,
-        title: '마을 잔치',
-        description: '주민과 함께하는 완공 축하 행사',
-        images: [
-          '/images/program/5/5555.JPG',
-          '/images/program/5/GOPR0430.JPG'
+          '/images/program/3/KakaoTalk_20220604_102553556_01.jpg',
+          '/images/program/3/KakaoTalk_20220611_132307516_08.jpg',
+          '/images/program/3/KakaoTalk_20211013_123434390_19.jpg',
+          '/images/program/3/KakaoTalk_20211013_123532460_14.jpg',
+          '/images/program/3/KakaoTalk_20220604_102553556_01.jpg',
+          '/images/program/3/KakaoTalk_20220611_132307516_08.jpg'
         ]
       }
     ]
@@ -493,7 +597,6 @@ export default function ProgramDetailPage() {
   const params = useParams()
   const router = useRouter()
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
-  const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false)
 
   const programId = params.id as string
   const program = programDetails[programId]
@@ -541,7 +644,7 @@ export default function ProgramDetailPage() {
             
             {/* 메인 컨텐츠 */}
             <div className="relative bg-white border-2 border-blue-100 rounded-2xl p-12">
-              <p className="text-xl text-center text-gray-700 leading-relaxed mb-10 max-w-3xl mx-auto">
+              <p className="text-xl text-center text-gray-700 leading-relaxed mb-10 max-w-3xl mx-auto whitespace-pre-line">
                 {program.description}
               </p>
               
@@ -558,7 +661,7 @@ export default function ProgramDetailPage() {
                   <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-3">
                     <span className="text-2xl">📅</span>
                   </div>
-                  <h4 className="font-semibold text-gray-900 mb-1">8주 과정</h4>
+                  <h4 className="font-semibold text-gray-900 mb-1">{program.duration}</h4>
                   <p className="text-sm text-gray-600">체계적인 프로그램</p>
                 </div>
                 <div className="text-center">
@@ -586,7 +689,7 @@ export default function ProgramDetailPage() {
                   </div>
                   <div className="text-center">
                     <p className="text-sm text-gray-500 mb-1">교육 기간</p>
-                    <p className="font-medium text-gray-900">{program.duration}</p>
+                    <p className="font-medium text-gray-900 whitespace-pre-line">{program.duration}</p>
                   </div>
                   <div className="text-center">
                     <p className="text-sm text-gray-500 mb-1">정원</p>
@@ -605,21 +708,12 @@ export default function ProgramDetailPage() {
               
               {/* 신청 버튼 - 심플한 디자인 */}
               <div className="flex justify-center gap-4">
-                <Button
-                  size="lg"
-                  className="bg-blue-700 hover:bg-blue-800 text-white font-semibold px-8"
-                  onClick={() => setIsApplicationModalOpen(true)}
-                >
-                  프로그램 신청하기
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-gray-300 hover:bg-gray-50 font-semibold px-8"
-                  onClick={() => router.push('/contact')}
+                <Link
+                  href="/contact"
+                  className="inline-block bg-blue-700 hover:bg-blue-800 text-white font-medium px-6 py-2.5 rounded-full transition-colors duration-200 shadow-md hover:shadow-lg"
                 >
                   문의하기
-                </Button>
+                </Link>
               </div>
             </div>
           </div>
@@ -628,50 +722,64 @@ export default function ProgramDetailPage() {
 
       {/* 회차별 교육 내용 */}
       <div className="bg-gray-50 py-16">
-        <div className="container-main">
-          <div className="max-w-5xl mx-auto">
-            <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">회차별 교육 내용</h2>
-            
-            {/* 타임라인 스타일 */}
-            <div className="relative">
-              {/* 세로선 */}
-              <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gray-200"></div>
-              
-              <div className="space-y-12">
-                {program.sessions.map((session, index) => (
-                  <div key={session.order} className="relative flex gap-8">
-                    {/* 주차 번호 */}
-                    <div className="flex-shrink-0 w-16 h-16 bg-white border-4 border-blue-700 rounded-full flex items-center justify-center shadow-sm z-10">
-                      <span className="text-xl font-bold text-blue-700">{session.order}</span>
-                    </div>
-                    
-                    {/* 내용 카드 */}
-                    <Card className="flex-1 p-6 hover:shadow-lg transition-shadow">
-                      <h3 className="text-xl font-semibold text-gray-900 mb-2">{session.title}</h3>
-                      <p className="text-gray-600 mb-4">{session.description}</p>
-                      
-                      {/* 이미지 그리드 */}
-                      <div className="grid grid-cols-2 gap-3">
-                        {session.images.slice(0, 2).map((image, idx) => (
-                          <div
-                            key={idx}
-                            className="relative aspect-video rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-                            onClick={() => setSelectedImage(image)}
-                          >
-                            <Image
-                              src={image}
-                              alt={`${session.title} - 사진 ${idx + 1}`}
-                              fill
-                              className="object-cover"
-                            />
-                          </div>
-                        ))}
+        <div className="space-y-20">
+          <div className="container-main">
+            <h2 className="text-3xl font-bold text-center text-gray-900 mb-4">
+              {programId === '2' ? '3가지 프로그램 과정' : 
+               programId === '3' ? '9가지 원예 프로그램' :
+               programId === '4' ? '2가지 프로그램' :
+               programId === '5' ? '3가지 프로그램' :
+               programId === '6' ? '2가지 프로그램' : 
+               `${program.sessions.length}주 회차별 교육 내용`}
+            </h2>
+            <p className="text-center text-gray-600 max-w-3xl mx-auto whitespace-pre-line">
+              {programId === '2' 
+                ? '학년과 수준에 맞는 다양한 모형집짓기 프로그램을 선택하여 참여할 수 있습니다.'
+                : programId === '3'
+                ? '작품(고급과정)에 따라 소요시간은 변경될 수 있습니다.\n단기수업 및 심화단계로 차수수업이 진행됩니다.'
+                : programId === '4'
+                ? '과학 원리를 배우고 직접 만들어보는 체험 중심의 창의 교육 프로그램입니다.'
+                : programId === '5'
+                ? '농촌 지역과 함께 성장하고 발전하는 상생 프로그램입니다.'
+                : programId === '6'
+                ? '학교와 지역 공간을 새롭게 디자인하고 변화시키는 프로젝트입니다.'
+                : '매주 단계별로 진행되는 체계적인 교육 과정을 통해 완성도 높은 결과물을 만들어갑니다.'}
+            </p>
+          </div>
+          
+          {/* 회차별 교육 내용 */}
+          <div className="space-y-16">
+            {program.sessions.map((session, index) => (
+              <div key={session.order} className="space-y-6">
+                {/* 회차 설명 */}
+                <div className="container-main">
+                  <div className="bg-white rounded-xl shadow-md p-6 md:p-8 max-w-4xl mx-auto">
+                    <div className="flex items-center mb-4">
+                      <div className="bg-gradient-to-br from-blue-600 to-blue-700 text-white font-bold text-lg rounded-full w-14 h-14 flex items-center justify-center mr-4 shadow-lg">
+                        {programId === '2' || programId === '3' || programId === '4' || programId === '5' || programId === '6' ? session.order : `${session.order}주`}
                       </div>
-                    </Card>
+                      <div>
+                        <h3 className="text-2xl font-bold text-gray-900">{session.title}</h3>
+                      </div>
+                    </div>
+                    {session.description && (
+                      <p className="text-lg text-gray-700 ml-18">{session.description}</p>
+                    )}
                   </div>
-                ))}
+                </div>
+                
+                {/* 무한 스크롤 이미지 갤러리 */}
+                <div className="w-full overflow-hidden">
+                  <InfiniteScrollGallery
+                    images={session.images.map((src, idx) => ({ 
+                      src, 
+                      alt: `${session.order}주차: ${session.title} - 이미지 ${idx + 1}` 
+                    }))}
+                    speed={35 + (index % 3) * 5} // 각 회차마다 약간 다른 속도
+                  />
+                </div>
               </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
@@ -702,11 +810,6 @@ export default function ProgramDetailPage() {
       )}
 
       {/* 신청 모달 */}
-      <ApplicationModal
-        isOpen={isApplicationModalOpen}
-        onClose={() => setIsApplicationModalOpen(false)}
-        programTitle={program.title}
-      />
     </div>
   )
 }

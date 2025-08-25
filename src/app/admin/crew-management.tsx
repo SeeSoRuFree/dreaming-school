@@ -5,6 +5,15 @@ import { Card } from '@/components/ui/card'
 import { User, CrewApplication } from '@/types'
 import { authUtils } from '@/lib/auth'
 import { useAlert } from '@/hooks/useAlert'
+import { mockCrewApplications, mockCrewUsers } from '@/lib/admin-mock-data'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter
+} from '@/components/ui/dialog'
 
 interface CrewManagementTabProps {
   users: User[]
@@ -17,6 +26,15 @@ export function CrewManagementTab({ users, currentUser }: CrewManagementTabProps
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all')
   const [selectedApplication, setSelectedApplication] = useState<CrewApplication | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  
+  // 모달 상태
+  const [showApproveModal, setShowApproveModal] = useState(false)
+  const [showRejectModal, setShowRejectModal] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [actionMessage, setActionMessage] = useState('')
+  const [rejectReason, setRejectReason] = useState('')
+  const [approveNote, setApproveNote] = useState('')
+  const [rejectError, setRejectError] = useState('')
 
   useEffect(() => {
     loadApplications()
@@ -37,7 +55,40 @@ export function CrewManagementTab({ users, currentUser }: CrewManagementTabProps
     try {
       const applicationsData = localStorage.getItem('crew-applications')
       if (applicationsData) {
-        setApplications(JSON.parse(applicationsData))
+        const parsedApplications = JSON.parse(applicationsData)
+        
+        // 대기중인 mock 데이터가 없으면 추가
+        const hasPending = parsedApplications.some((app: CrewApplication) => app.status === 'pending')
+        if (!hasPending) {
+          const pendingApplications = mockCrewApplications.filter(app => app.status === 'pending')
+          const pendingUsers = mockCrewUsers.filter(u => u.crewStatus === 'pending')
+          
+          // 크루 신청 추가
+          pendingApplications.forEach(app => {
+            if (!parsedApplications.find((a: CrewApplication) => a.id === app.id)) {
+              parsedApplications.push(app)
+            }
+          })
+          
+          // 사용자 추가
+          const usersData = localStorage.getItem('dream-house-users')
+          const users = usersData ? JSON.parse(usersData) : []
+          pendingUsers.forEach(user => {
+            if (!users.find((u: User) => u.id === user.id)) {
+              users.push(user)
+            }
+          })
+          
+          localStorage.setItem('crew-applications', JSON.stringify(parsedApplications))
+          localStorage.setItem('dream-house-users', JSON.stringify(users))
+        }
+        
+        setApplications(parsedApplications)
+      } else {
+        // 데이터가 없으면 mock 데이터로 초기화
+        localStorage.setItem('crew-applications', JSON.stringify(mockCrewApplications))
+        localStorage.setItem('dream-house-users', JSON.stringify(mockCrewUsers))
+        setApplications(mockCrewApplications)
       }
       setIsLoading(false)
     } catch (error) {
@@ -55,20 +106,32 @@ export function CrewManagementTab({ users, currentUser }: CrewManagementTabProps
     return users.find(u => u.id === userId)
   }
 
-  const handleApprove = (applicationId: string, notes?: string) => {
-    const application = applications.find(app => app.id === applicationId)
-    if (!application) return
+  const handleApproveClick = (application: CrewApplication) => {
+    setSelectedApplication(application)
+    setShowApproveModal(true)
+    setApproveNote('')
+  }
 
-    const user = getApplicantInfo(application.userId)
+  const handleRejectClick = (application: CrewApplication) => {
+    setSelectedApplication(application)
+    setShowRejectModal(true)
+    setRejectReason('')
+    setRejectError('')
+  }
+
+  const confirmApprove = () => {
+    if (!selectedApplication) return
+
+    const user = getApplicantInfo(selectedApplication.userId)
     if (!user) return
 
     // Update application
     const updatedApplication: CrewApplication = {
-      ...application,
+      ...selectedApplication,
       status: 'approved',
       processedAt: new Date(),
       processedBy: currentUser.id,
-      notes: notes || application.notes
+      notes: approveNote || selectedApplication.notes
     }
 
     // Update user role and status
@@ -80,7 +143,7 @@ export function CrewManagementTab({ users, currentUser }: CrewManagementTabProps
 
     // Save updates
     const updatedApplications = applications.map(app => 
-      app.id === applicationId ? updatedApplication : app
+      app.id === selectedApplication.id ? updatedApplication : app
     )
     setApplications(updatedApplications)
     localStorage.setItem('crew-applications', JSON.stringify(updatedApplications))
@@ -88,29 +151,35 @@ export function CrewManagementTab({ users, currentUser }: CrewManagementTabProps
     // Update user
     authUtils.updateUser(user.id, { role: 'crew', crewStatus: 'approved' })
 
-    showAlert(`${user.name}님의 크루 신청이 승인되었습니다.`, '승인 완료')
+    // 성공 모달 표시
+    setActionMessage(`${user.name}님의 크루 신청이 승인되었습니다.`)
+    setShowApproveModal(false)
+    setShowSuccessModal(true)
     setSelectedApplication(null)
   }
 
-  const handleReject = (applicationId: string, notes?: string) => {
-    const application = applications.find(app => app.id === applicationId)
-    if (!application) return
+  const confirmReject = () => {
+    if (!selectedApplication) return
 
-    const user = getApplicantInfo(application.userId)
+    const user = getApplicantInfo(selectedApplication.userId)
     if (!user) return
 
-    if (!notes) {
-      showAlert('거부 사유를 입력해주세요.', '입력 오류')
+    if (!rejectReason.trim()) {
+      // 거부 사유가 없으면 에러 메시지 표시
+      setRejectError('거부 사유를 입력해주세요.')
       return
     }
+    
+    // 에러 메시지 초기화
+    setRejectError('')
 
     // Update application
     const updatedApplication: CrewApplication = {
-      ...application,
+      ...selectedApplication,
       status: 'rejected',
       processedAt: new Date(),
       processedBy: currentUser.id,
-      notes
+      notes: rejectReason
     }
 
     // Update user status
@@ -121,7 +190,7 @@ export function CrewManagementTab({ users, currentUser }: CrewManagementTabProps
 
     // Save updates
     const updatedApplications = applications.map(app => 
-      app.id === applicationId ? updatedApplication : app
+      app.id === selectedApplication.id ? updatedApplication : app
     )
     setApplications(updatedApplications)
     localStorage.setItem('crew-applications', JSON.stringify(updatedApplications))
@@ -129,7 +198,10 @@ export function CrewManagementTab({ users, currentUser }: CrewManagementTabProps
     // Update user
     authUtils.updateUser(user.id, { crewStatus: 'rejected' })
 
-    showAlert(`${user.name}님의 크루 신청이 거부되었습니다.`, '거부 완료')
+    // 성공 모달 표시
+    setActionMessage(`${user.name}님의 크루 신청이 거부되었습니다.`)
+    setShowRejectModal(false)
+    setShowSuccessModal(true)
     setSelectedApplication(null)
   }
 
@@ -280,10 +352,112 @@ export function CrewManagementTab({ users, currentUser }: CrewManagementTabProps
           application={selectedApplication}
           user={getApplicantInfo(selectedApplication.userId)!}
           onClose={() => setSelectedApplication(null)}
-          onApprove={handleApprove}
-          onReject={handleReject}
+          onApprove={handleApproveClick}
+          onReject={handleRejectClick}
         />
       )}
+
+      {/* 승인 확인 모달 */}
+      <Dialog open={showApproveModal} onOpenChange={setShowApproveModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>크루 신청 승인</DialogTitle>
+            <DialogDescription>
+              {selectedApplication && getApplicantInfo(selectedApplication.userId)?.name}님의 크루 신청을 승인하시겠습니까?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <label className="text-sm font-medium text-gray-700">승인 메모 (선택)</label>
+              <textarea
+                value={approveNote}
+                onChange={(e) => setApproveNote(e.target.value)}
+                className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                rows={3}
+                placeholder="특이사항이나 메모를 입력하세요"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowApproveModal(false)}>
+              취소
+            </Button>
+            <Button onClick={confirmApprove} className="bg-blue-600 hover:bg-blue-700 text-white">
+              승인
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 거부 확인 모달 */}
+      <Dialog open={showRejectModal} onOpenChange={(open) => {
+        setShowRejectModal(open)
+        if (!open) {
+          setRejectError('')
+          setRejectReason('')
+        }
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>크루 신청 거부</DialogTitle>
+            <DialogDescription>
+              {selectedApplication && getApplicantInfo(selectedApplication.userId)?.name}님의 크루 신청을 거부하시겠습니까?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <label className="text-sm font-medium text-gray-700">거부 사유 <span className="text-red-500">*</span></label>
+              <textarea
+                value={rejectReason}
+                onChange={(e) => {
+                  setRejectReason(e.target.value)
+                  if (rejectError) setRejectError('')
+                }}
+                className={`w-full mt-1 px-3 py-2 border rounded-lg focus:ring-2 ${
+                  rejectError 
+                    ? 'border-red-500 focus:ring-red-500' 
+                    : 'border-gray-300 focus:ring-red-500'
+                }`}
+                rows={3}
+                placeholder="거부 사유를 입력해주세요 (필수)"
+                required
+              />
+              {rejectError && (
+                <p className="mt-1 text-sm text-red-600">{rejectError}</p>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setShowRejectModal(false)
+              setRejectError('')
+              setRejectReason('')
+            }}>
+              취소
+            </Button>
+            <Button onClick={confirmReject} className="bg-red-600 hover:bg-red-700 text-white">
+              거부
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 성공 메시지 모달 */}
+      <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>처리 완료</DialogTitle>
+            <DialogDescription>
+              {actionMessage}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setShowSuccessModal(false)} className="bg-blue-600 hover:bg-blue-700 text-white">
+              확인
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
@@ -293,8 +467,8 @@ interface CrewApplicationDetailsProps {
   application: CrewApplication
   user: User
   onClose: () => void
-  onApprove: (applicationId: string, notes?: string) => void
-  onReject: (applicationId: string, notes?: string) => void
+  onApprove: (application: CrewApplication) => void
+  onReject: (application: CrewApplication) => void
 }
 
 function CrewApplicationDetails({ 
@@ -416,21 +590,13 @@ function CrewApplicationDetails({
           {application.status === 'pending' && (
             <>
               <Button
-                onClick={() => {
-                  if (confirm('이 신청을 거부하시겠습니까?')) {
-                    onReject(application.id, adminNotes)
-                  }
-                }}
+                onClick={() => onReject(application)}
                 className="bg-red-600 hover:bg-red-700 text-white"
               >
                 거부
               </Button>
               <Button
-                onClick={() => {
-                  if (confirm('이 신청을 승인하시겠습니까?')) {
-                    onApprove(application.id, adminNotes)
-                  }
-                }}
+                onClick={() => onApprove(application)}
                 className="btn-primary"
               >
                 승인

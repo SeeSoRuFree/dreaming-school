@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Card } from "@/components/ui/card"
 import { mockNews } from '@/lib/mock-data'
 import { News } from '@/types'
-import { Calendar, ChevronRight, Bell, Newspaper } from 'lucide-react'
+import { Calendar, ChevronRight, Bell, Newspaper, Search } from 'lucide-react'
 
 function NewsContent() {
   const router = useRouter()
@@ -13,6 +13,7 @@ function NewsContent() {
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'news' | 'notice'>('all')
   const [selectedNews, setSelectedNews] = useState<News | null>(null)
   const [newsData, setNewsData] = useState<News[]>([])
+  const [searchQuery, setSearchQuery] = useState('')
 
   // 뉴스 데이터 로드
   useEffect(() => {
@@ -49,9 +50,17 @@ function NewsContent() {
     }
   }, [searchParams, newsData])
 
-  const filteredNews = selectedCategory === 'all' 
-    ? newsData 
-    : newsData.filter(news => news.category === selectedCategory)
+  const filteredNews = newsData.filter(news => {
+    // 카테고리 필터
+    const categoryMatch = selectedCategory === 'all' || news.category === selectedCategory
+    
+    // 검색 필터
+    const searchMatch = searchQuery === '' || 
+      news.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      news.content.toLowerCase().includes(searchQuery.toLowerCase())
+    
+    return categoryMatch && searchMatch
+  })
 
   const sortedNews = filteredNews.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
 
@@ -122,7 +131,7 @@ function NewsContent() {
   return (
     <>
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-blue-50 to-white">
+      <section className="bg-gradient-to-b from-blue-50 to-white pt-24">
         <div className="container-main py-16">
           <h1 className="heading-1 text-center">소식·공지</h1>
           <p className="body-text text-center mt-6 max-w-3xl mx-auto text-gray-600">
@@ -131,34 +140,49 @@ function NewsContent() {
         </div>
       </section>
 
-      {/* Tab Navigation */}
+      {/* Tab Navigation & Search */}
       <section className="bg-white">
-        <div className="container-main">
-          <div className="flex justify-center">
-            <div className="flex bg-gray-100 rounded-lg p-1">
-              {[
-                { key: 'all', label: '전체' },
-                { key: 'news', label: '소식' },
-                { key: 'notice', label: '공지' }
-              ].map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setSelectedCategory(tab.key as 'all' | 'news' | 'notice')}
-                  className={`px-6 py-3 rounded-md font-medium transition-all duration-200 ${
-                    selectedCategory === tab.key
-                      ? 'bg-white text-blue-700 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-800'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
+        <div className="container-main py-4">
+          <div className="max-w-5xl mx-auto">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+              {/* Tab Navigation */}
+              <div className="flex bg-gray-100 rounded-lg p-1">
+                {[
+                  { key: 'all', label: '전체' },
+                  { key: 'news', label: '소식' },
+                  { key: 'notice', label: '공지' }
+                ].map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setSelectedCategory(tab.key as 'all' | 'news' | 'notice')}
+                    className={`px-6 py-3 rounded-md font-medium transition-all duration-200 ${
+                      selectedCategory === tab.key
+                        ? 'bg-white text-blue-700 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+              
+              {/* Search Box */}
+              <div className="relative w-full md:w-96">
+                <input
+                  type="text"
+                  placeholder="제목 또는 내용으로 검색"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <div className="container-main section-padding">
+      <div className="container-main py-8">
 
         {/* 소식 목록 */}
         <div className="max-w-5xl mx-auto">
