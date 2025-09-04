@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { User, CrewApplication } from '@/types'
 import { mockCrewApplications, mockCrewUsers } from '@/lib/admin-mock-data'
+import { Download } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -77,6 +78,48 @@ export function CrewManagementTab({ users, currentUser }: CrewManagementTabProps
     return users.find(u => u.id === userId)
   }
 
+  const handleCSVDownload = () => {
+    // CSV 헤더 정의
+    const headers = ['이름', '이메일', '전화번호', '신청일', '지원동기', '관련경험', '활동가능시간', '보유기술', '상태']
+    
+    // 데이터를 CSV 형식으로 변환
+    const csvData = applications.map(app => {
+      const user = getApplicantInfo(app.userId)
+      return [
+        user?.name || '',
+        user?.email || '',
+        user?.phone || '-',
+        new Date(app.appliedAt).toLocaleDateString('ko-KR'),
+        `"${app.motivation.replace(/"/g, '""')}"`, // 큰따옴표 처리 및 텍스트 감싸기
+        `"${app.experience.replace(/"/g, '""')}"`,
+        `"${app.availableTime.replace(/"/g, '""')}"`,
+        app.skills.join('; '),
+        app.status === 'pending' ? '대기중' : app.status === 'approved' ? '승인' : '거절'
+      ]
+    })
+    
+    // CSV 생성
+    const csvContent = [
+      headers.join(','),
+      ...csvData.map(row => row.join(','))
+    ].join('\n')
+    
+    // BOM 추가 (한글 깨짐 방지)
+    const BOM = '\uFEFF'
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' })
+    
+    // 다운로드 실행
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    const today = new Date().toISOString().split('T')[0]
+    link.setAttribute('href', url)
+    link.setAttribute('download', `크루신청목록_${today}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
   if (isLoading) {
     return (
       <div className="text-center py-12">
@@ -95,6 +138,14 @@ export function CrewManagementTab({ users, currentUser }: CrewManagementTabProps
             <p className="text-gray-600">총 {applications.length}건의 크루 신청이 있습니다.</p>
           </div>
           <div className="flex gap-2">
+            <Button 
+              onClick={handleCSVDownload}
+              className="bg-gray-600 hover:bg-gray-700 text-white"
+              disabled={applications.length === 0}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              CSV 다운로드
+            </Button>
             <Link href="/crew-application">
               <Button className="bg-blue-600 hover:bg-blue-700 text-white">
                 크루 추가하기
