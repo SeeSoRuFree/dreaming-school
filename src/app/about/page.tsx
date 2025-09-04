@@ -1,9 +1,11 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { Card } from "@/components/ui/card"
 import { MapPin, Phone, Clock, Car, Bus, Train, CheckCircle, Calendar, CheckCircle2, Users, Home, BookOpen, Award, Briefcase, FileText, TrendingUp, Building2, Heart, Rocket } from 'lucide-react'
 
 export default function AboutPage() {
+  const [activeSection, setActiveSection] = useState('about')
   
   const coreValues = [
     { title: '양선', description: '우리는 모든 교육과정, 내부운영과정을 선한 양심으로 운영하겠습니다.' },
@@ -34,14 +36,6 @@ export default function AboutPage() {
     }
   ]
 
-  const operationStatus = {
-    years: [
-      { year: '2022년', 교용원: '1명', 조합원: '9명' },
-      { year: '2023년', 교용원: '1명', 조합원: '8명' },
-      { year: '2024년', 교용원: '3명', 조합원: '8명' },
-      { year: '2025년', 교용원: '2명(1명 7월추가 예정)', 조합원: '7명' }
-    ]
-  }
 
   const members = [
     {
@@ -179,6 +173,54 @@ export default function AboutPage() {
     window.location.href = `tel:${phone}`
   }
 
+  // 네비게이션 섹션
+  const navSections = [
+    { id: 'about', label: '꿈을 짓는 학교는?' },
+    { id: 'mission', label: '미션과 비전' },
+    { id: 'organization', label: '조직구성' },
+    { id: 'location', label: '오시는 길' }
+  ]
+
+  // 스크롤 이벤트 처리
+  const handleNavClick = (sectionId: string) => {
+    const element = document.getElementById(sectionId)
+    if (element) {
+      const offset = 100 // 네비게이션 바 높이 고려
+      const elementPosition = element.offsetTop - offset
+      window.scrollTo({
+        top: elementPosition,
+        behavior: 'smooth'
+      })
+    }
+  }
+
+  // Intersection Observer로 현재 섹션 감지
+  useEffect(() => {
+    const observerOptions = {
+      root: null,
+      rootMargin: '-100px 0px -70% 0px',
+      threshold: 0
+    }
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id)
+        }
+      })
+    }
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions)
+
+    // 각 섹션 관찰 시작
+    navSections.forEach(section => {
+      const element = document.getElementById(section.id)
+      if (element) observer.observe(element)
+    })
+
+    return () => observer.disconnect()
+  }, [])
+
   return (
     <>
       {/* Hero Section */}
@@ -191,9 +233,32 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* Section Navigation */}
+      <nav className="sticky top-16 z-40 bg-white">
+        <div className="container-main">
+          <div className="flex justify-center gap-2 md:gap-4 py-4">
+            {navSections.map((section) => (
+              <button
+                key={section.id}
+                onClick={() => handleNavClick(section.id)}
+                className={`relative px-4 md:px-6 py-2 text-sm md:text-base font-medium transition-all duration-300 ${
+                  activeSection === section.id
+                    ? 'text-blue-700'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {section.label}
+                {activeSection === section.id && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full" />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      </nav>
 
       {/* Introduction Section */}
-      <section className="bg-white">
+      <section id="about" className="bg-white">
         <div className="container-main section-padding">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">조직 소개</h2>
@@ -226,7 +291,7 @@ export default function AboutPage() {
       </section>
 
       {/* Mission & Vision */}
-      <section className="bg-gray-50">
+      <section id="mission" className="bg-gray-50">
         <div className="container-main section-padding">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">미션 & 비전</h2>
@@ -271,7 +336,7 @@ export default function AboutPage() {
       </section>
 
       {/* Organization Structure */}
-      <section className="bg-white">
+      <section id="organization" className="bg-white">
         <div className="container-main section-padding">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">조직 구성</h2>
@@ -298,50 +363,9 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Operation Status */}
+      {/* Professional Members */}
       <section className="bg-gray-50">
         <div className="container-main section-padding">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">운영 현황</h2>
-            <p className="text-xl text-gray-600">연도별 조직 구성과 성장 현황</p>
-          </div>
-          <div className="max-w-5xl mx-auto mb-12">
-            <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
-                    <th className="py-6 px-8 text-left text-lg font-semibold">구분</th>
-                    {operationStatus.years.map((year) => (
-                      <th key={year.year} className="py-6 px-8 text-center text-lg font-semibold">{year.year}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-b hover:bg-blue-50 transition-colors">
-                    <td className="py-6 px-8 font-semibold text-gray-800">교용원</td>
-                    {operationStatus.years.map((year) => (
-                      <td key={year.year} className="py-6 px-8 text-center font-medium text-gray-700">{year.교용원}</td>
-                    ))}
-                  </tr>
-                  <tr className="hover:bg-blue-50 transition-colors">
-                    <td className="py-6 px-8 font-semibold text-gray-800">조합원</td>
-                    {operationStatus.years.map((year) => (
-                      <td key={year.year} className="py-6 px-8 text-center font-medium text-gray-700">{year.조합원}</td>
-                    ))}
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div className="text-center mb-12">
-            <div className="bg-gradient-to-r from-blue-50 to-amber-50 rounded-2xl px-10 py-6 shadow-lg">
-              <p className="text-xl font-semibold text-blue-800">
-                재무/행정/설계/개발/제작/상담/운영 등 각 분야별 기능과 역량 보유
-              </p>
-            </div>
-          </div>
-
           {/* Members */}
           <div className="text-center mb-8">
             <h3 className="text-3xl font-bold text-gray-900 mb-4">전문 조합원 소개</h3>
@@ -356,7 +380,6 @@ export default function AboutPage() {
                       {member.name.substring(0, 1)}
                     </span>
                   </div>
-                  <h3 className="text-xl font-bold text-blue-900 mb-2">{member.name}</h3>
                 </div>
                 <div className="text-sm text-gray-600 space-y-1 text-center leading-relaxed" dangerouslySetInnerHTML={{ __html: member.role }} />
               </div>
@@ -425,7 +448,7 @@ export default function AboutPage() {
       </section>
 
       {/* Location Section */}
-      <section className="bg-gray-50">
+      <section id="location" className="bg-gray-50">
         <div className="container-main section-padding">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">오시는 길</h2>

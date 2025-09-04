@@ -8,6 +8,7 @@ import FloatingButtons from "@/components/ui/FloatingButtons";
 import { AlertProvider } from "@/contexts/AlertContext";
 import { ConfirmProvider } from "@/contexts/ConfirmContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import DataInitializer from "@/components/DataInitializer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,12 +39,14 @@ export default function RootLayout({
           <AlertProvider>
             <ConfirmProvider>
               <CustomCursor />
-              <Header />
-              <main className="flex-grow">
-                {children}
-              </main>
-              <Footer />
-              <FloatingButtons />
+              <DataInitializer>
+                <Header />
+                <main className="flex-grow">
+                  {children}
+                </main>
+                <Footer />
+                <FloatingButtons />
+              </DataInitializer>
             </ConfirmProvider>
           </AlertProvider>
         </ThemeProvider>

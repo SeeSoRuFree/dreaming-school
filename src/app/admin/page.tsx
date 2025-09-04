@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAdminAuth } from '@/hooks/useAdminAuth'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { User, News, GeneralInquiry, DonationInquiry } from '@/types'
+import { User, News, GeneralInquiry, DonationInquiry, FootstepPost } from '@/types'
 import { mockNews, mockGeneralInquiries } from '@/lib/mock-data'
 import { initializeAdminMockData } from '@/lib/admin-mock-data'
 import { useAlert } from '@/hooks/useAlert'
@@ -14,16 +14,19 @@ import { MediaManagementTab } from './media-management'
 import { ExternalServicesTab } from './external-services'
 import { NewsManagementTab } from './news-management'
 import { InquiryManagementTab } from './inquiry-management'
+import { ProgramManagementTab } from './program-management'
+import FootstepsManagementTab from './footsteps-management'
 
 export default function AdminPage() {
   const router = useRouter()
   const { isAdmin, isLoading: authLoading, logout } = useAdminAuth()
   const { showAlert } = useAlert()
-  const [activeTab, setActiveTab] = useState<'news' | 'inquiry' | 'media' | 'external' | 'crew'>('news')
+  const [activeTab, setActiveTab] = useState<'news' | 'inquiry' | 'media' | 'external' | 'crew' | 'programs' | 'footsteps'>('media')
   const [users, setUsers] = useState<User[]>([])
   const [news, setNews] = useState<News[]>([])
   const [generalInquiries, setGeneralInquiries] = useState<GeneralInquiry[]>([])
   const [donationInquiries, setDonationInquiries] = useState<DonationInquiry[]>([])
+  const [footstepPosts, setFootstepPosts] = useState<FootstepPost[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [currentUser] = useState<User>({
     id: 'admin',
@@ -97,6 +100,20 @@ export default function AdminPage() {
           setDonationInquiries([])
         }
 
+        // Load footstep posts
+        const footstepPostsData = localStorage.getItem('footstep-posts')
+        if (footstepPostsData) {
+          const parsedPosts = JSON.parse(footstepPostsData)
+          const postsWithDates = parsedPosts.map((post: any) => ({
+            ...post,
+            createdAt: new Date(post.createdAt),
+            updatedAt: post.updatedAt ? new Date(post.updatedAt) : undefined
+          }))
+          setFootstepPosts(postsWithDates)
+        } else {
+          setFootstepPosts([])
+        }
+
         setIsLoading(false)
       } catch (error) {
         console.error('Failed to load admin data:', error)
@@ -161,6 +178,36 @@ export default function AdminPage() {
           <div className="border-b border-gray-200">
             <nav className="-mb-px flex flex-wrap gap-x-6 gap-y-2">
               <button
+                onClick={() => setActiveTab('media')}
+                className={`py-3 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'media'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                메인페이지 동영상
+              </button>
+              <button
+                onClick={() => setActiveTab('programs')}
+                className={`py-3 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'programs'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                프로그램 관리
+              </button>
+              <button
+                onClick={() => setActiveTab('footsteps')}
+                className={`py-3 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'footsteps'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                발자취 관리
+              </button>
+              <button
                 onClick={() => setActiveTab('news')}
                 className={`py-3 px-1 border-b-2 font-medium text-sm ${
                   activeTab === 'news'
@@ -179,16 +226,6 @@ export default function AdminPage() {
                 }`}
               >
                 문의 관리
-              </button>
-              <button
-                onClick={() => setActiveTab('media')}
-                className={`py-3 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'media'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                영상/이미지 업로드
               </button>
               <button
                 onClick={() => setActiveTab('external')}
@@ -213,6 +250,14 @@ export default function AdminPage() {
             </nav>
           </div>
         </div>
+
+        {activeTab === 'programs' && (
+          <ProgramManagementTab />
+        )}
+
+        {activeTab === 'footsteps' && (
+          <FootstepsManagementTab posts={footstepPosts} setPosts={setFootstepPosts} currentUser={currentUser} />
+        )}
 
         {activeTab === 'media' && (
           <MediaManagementTab />

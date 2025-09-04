@@ -12,6 +12,29 @@ export interface Program {
   createdAt: Date
 }
 
+export interface ProgramSession {
+  order: number
+  title: string
+  description: string
+  images: string[]
+}
+
+export interface ProgramDetail {
+  id: string
+  title: string
+  subtitle: string
+  description: string
+  target: string
+  duration: string
+  maxParticipants: number
+  fee: string
+  location: string
+  sessions: ProgramSession[]
+  category: 'building' | 'gardening' | 'science' | 'rural' | 'remodeling'
+  createdAt: Date
+  updatedAt?: Date
+}
+
 export interface News {
   id: string
   title: string
@@ -158,4 +181,16 @@ export interface EmailSent {
   recipientType: 'all' | 'members' | 'crew' | 'selected'
   sentAt: Date
   sentBy: string
+}
+
+export interface FootstepPost {
+  id: string
+  title: string
+  content: string
+  programCategory: 'building' | 'gardening' | 'science' | 'rural' | 'remodeling' | 'general'
+  programName: string
+  createdAt: Date
+  updatedAt?: Date
+  authorId: string
+  authorName: string
 }

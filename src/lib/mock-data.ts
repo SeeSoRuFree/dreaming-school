@@ -1,4 +1,4 @@
-import { Program, News, HistoryItem, GeneralInquiry, User, CrewApplication, CrewPost } from '@/types'
+import { Program, News, HistoryItem, GeneralInquiry, User, CrewApplication, CrewPost, FootstepPost } from '@/types'
 
 export const mockPrograms: Program[] = [
   // 소형 집짓기 체험교육 사업
@@ -513,6 +513,214 @@ export const mockCrewPosts: CrewPost[] = [
   }
 ]
 
+export const mockFootstepPosts: FootstepPost[] = [
+  {
+    id: 'footstep_001',
+    title: '첫 번째 한평 집짓기 완성! 아이들의 성취감이 대단했어요',
+    content: `<h2>세상에서 가장 위대한 한평 집짓기 프로젝트 완료</h2>
+    
+<p>지난 3개월간 진행된 한평 집짓기 체험교육이 드디어 완료되었습니다. 초등학교 4학년부터 중학교 2학년까지 총 24명의 학생들이 참여했습니다.</p>
+
+<h3>프로그램 진행 과정</h3>
+<ul>
+  <li><strong>1-3회차:</strong> 건축 기초 이론 및 설계도 그리기</li>
+  <li><strong>4-8회차:</strong> 기초 공사부터 벽체 설치까지</li>
+  <li><strong>9-12회차:</strong> 지붕 설치 및 마무리 작업</li>
+</ul>
+
+<p>특히 인상적이었던 점은 아이들이 직접 설계한 창문과 문의 위치가 실제 건축에 반영되었다는 것입니다. "제가 설계한 대로 집이 지어졌어요!"라며 기뻐하던 김○○ 학생의 모습이 아직도 생생합니다.</p>
+
+<h3>참여 학생 소감</h3>
+<blockquote>
+<p>"처음엔 못할 것 같았는데 친구들과 함께 하니까 재미있었어요. 우리가 만든 집에 들어가니까 정말 뿌듯했어요!" - 박○○(초5)</p>
+</blockquote>
+
+<p>다음 기수도 벌써부터 신청 문의가 많이 들어오고 있습니다. 더 많은 아이들이 이런 소중한 경험을 할 수 있도록 노력하겠습니다.</p>`,
+    programCategory: 'building',
+    programName: '한평 집짓기',
+    createdAt: new Date('2024-11-15'),
+    authorId: 'admin_default',
+    authorName: '관리자'
+  },
+  {
+    id: 'footstep_002',
+    title: '원예프로그램 10차수 완주! 아이들만의 작은 정원이 완성되었어요',
+    content: `<h2>원예프로그램 10차수 수업 성공적으로 완료</h2>
+    
+<p>지난 10주간 매주 수요일 오후에 진행된 원예프로그램이 성공적으로 마무리되었습니다. 총 18명의 학생들이 참여하여 각자의 작은 정원을 완성했습니다.</p>
+
+<h3>프로그램 주요 활동</h3>
+<ul>
+  <li><strong>1-2차시:</strong> 분경 만들기 - 나만의 미니 정원</li>
+  <li><strong>3-4차시:</strong> 테라리움 제작 - 유리병 속 작은 세상</li>
+  <li><strong>5-6차시:</strong> 텃밭 가꾸기 - 상추, 무, 당근 심기</li>
+  <li><strong>7-8차시:</strong> 꽃밭 조성 - 팬지, 비올라 심기</li>
+  <li><strong>9-10차시:</strong> 수확의 기쁨과 마무리 작업</li>
+</ul>
+
+<p>"처음엔 흙 만지는 게 싫었는데 이제는 매일 와서 물 주고 싶어요"라고 말하는 이○○ 학생의 변화가 특히 인상적이었습니다.</p>
+
+<h3>수확의 기쁨</h3>
+<p>마지막 수업에서는 직접 기른 상추와 무를 수확해서 샐러드를 만들어 먹었습니다. 아이들의 "우와~ 정말 맛있어요!" 하는 탄성이 아직도 귓가에 맴돕니다.</p>
+
+<blockquote>
+<p>"제가 심은 상추로 만든 샐러드가 이렇게 맛있을 줄 몰랐어요. 집에서도 키워보고 싶어요!" - 최○○(초4)</p>
+</blockquote>
+
+<p>다음 달부터는 봄 원예프로그램 준비에 들어갑니다. 더 다양한 식물과 만날 수 있도록 계획하고 있어요!</p>`,
+    programCategory: 'gardening',
+    programName: '테라리움수업',
+    createdAt: new Date('2024-10-20'),
+    authorId: 'admin_default',
+    authorName: '관리자'
+  },
+  {
+    id: 'footstep_003',
+    title: '과학창의교육에서 만난 작은 발명가들',
+    content: `<h2>과학창의교육 및 체험학습 사업 후기</h2>
+    
+<p>여름방학 동안 3주간 진행된 과학창의교육이 성황리에 마무리되었습니다. 중학생 15명이 참여하여 과학의 원리를 배우고 창의적인 발명품을 만들어보는 시간을 가졌습니다.</p>
+
+<h3>프로그램 구성</h3>
+<ul>
+  <li><strong>1주차:</strong> 과학 기초 원리 이해 (물리, 화학 기초)</li>
+  <li><strong>2주차:</strong> 창의목공으로 간단한 발명품 제작</li>
+  <li><strong>3주차:</strong> 팀 프로젝트 및 발표회</li>
+</ul>
+
+<h3>놀라운 아이디어들</h3>
+<p>아이들의 창의성은 정말 놀라웠습니다. 특히 "자동으로 물을 주는 화분"을 만든 김○○ 학생과 "태양열을 이용한 휴대폰 충전기"를 설계한 이○○ 학생의 아이디어가 인상적이었습니다.</p>
+
+<blockquote>
+<p>"과학이 이렇게 재미있는 줄 몰랐어요. 집에 가서도 계속 만들어보고 싶어요!" - 정○○(중1)</p>
+</blockquote>
+
+<p>마지막 날 발표회에는 학부모님들도 참석해주셔서 아이들의 성과를 함께 축하해주셨습니다. 내년에는 더 다양한 과학 분야를 다뤄볼 계획입니다.</p>`,
+    programCategory: 'science',
+    programName: '과학교육',
+    createdAt: new Date('2024-09-25'),
+    authorId: 'admin_default',
+    authorName: '관리자'
+  },
+  {
+    id: 'footstep_004',
+    title: '어르신들과 함께한 농촌활성화 프로그램, 세대를 잇는 소중한 시간',
+    content: `<h2>농촌활성화 사업 - 세대간 교류 프로그램</h2>
+    
+<p>지난 2개월간 진행된 농촌활성화 사업이 마무리되었습니다. 지역 어르신 12분과 청년 8명이 함께 참여하여 농촌 지역의 전통을 배우고 현대적 감각으로 재해석해보는 의미있는 시간을 가졌습니다.</p>
+
+<h3>프로그램 주요 활동</h3>
+<ul>
+  <li><strong>전통 한옥 짓기:</strong> 어르신들의 지도하에 전통 건축 기법 체험</li>
+  <li><strong>농촌 원예 치유:</strong> 함께 텃밭을 가꾸며 자연과 소통</li>
+  <li><strong>지역 살리기 워크숍:</strong> 농촌 활성화 아이디어 공유</li>
+  <li><strong>전통 음식 만들기:</strong> 어르신들의 레시피로 향토 음식 체험</li>
+</ul>
+
+<h3>감동적인 순간들</h3>
+<p>가장 인상깊었던 순간은 87세 박○○ 할아버지께서 50년 전 집을 지으셨던 방법을 직접 보여주시며 "요즘 젊은이들이 이런 걸 배우려고 하니 고맙고 기특하다"며 눈물을 보이신 모습이었습니다.</p>
+
+<blockquote>
+<p>"할아버지께 배운 전통 기법을 현대 건축에도 응용해볼 수 있을 것 같아요. 정말 값진 경험이었습니다." - 김○○(청년참가자)</p>
+</blockquote>
+
+<p>이 프로그램을 통해 단순한 기술 전수를 넘어 세대간 지혜와 사랑을 나누는 소중한 시간이 되었습니다. 참가자들 모두 "또 참여하고 싶다"는 의견을 주셔서 내년에도 지속할 예정입니다.</p>`,
+    programCategory: 'rural',
+    programName: '농촌주민들과 함께하는 세상에서 가장 위대한 한평집짓기',
+    createdAt: new Date('2024-08-30'),
+    authorId: 'admin_default',
+    authorName: '관리자'
+  },
+  {
+    id: 'footstep_005',
+    title: '버려진 창고가 아이들의 꿈터로! 공간 재창조 리모델링 완성',
+    content: `<h2>공간 재창조 리모델링 사업 - 창고에서 꿈터로</h2>
+    
+<p>6개월간 진행된 공간 재창조 리모델링 프로젝트가 드디어 완성되었습니다! 오랫동안 방치되어 있던 낡은 창고가 아이들을 위한 멋진 학습공간으로 완전히 변신했습니다.</p>
+
+<h3>리모델링 과정</h3>
+<ul>
+  <li><strong>1개월차:</strong> 공간 분석 및 설계 - 아이들과 함께 꿈의 공간 설계</li>
+  <li><strong>2-3개월차:</strong> 기존 구조물 철거 및 기초 공사</li>
+  <li><strong>4-5개월차:</strong> 새로운 구조 설치 및 안전 시설 완비</li>
+  <li><strong>6개월차:</strong> 인테리어 및 마무리 - 아이들이 직접 벽화 그리기</li>
+</ul>
+
+<h3>참여자들의 변화</h3>
+<p>이 프로젝트에 참여한 고등학생 10명과 지역 주민 15분 모두 "버려진 것도 새롭게 태어날 수 있다"는 소중한 경험을 하셨습니다. 특히 처음엔 망치질도 무서워하던 학생들이 마지막엔 전문가 못지않게 작업하는 모습이 인상적이었습니다.</p>
+
+<blockquote>
+<p>"처음엔 더러운 창고였는데 우리 손으로 이렇게 예쁜 공간을 만들 수 있다니 정말 신기해요!" - 박○○(고1)</p>
+</blockquote>
+
+<h3>새로운 시작</h3>
+<p>이제 이 공간은 "꿈터"라는 이름으로 지역 아이들의 방과후 학습공간이자 동네 주민들의 소통 공간으로 활용되고 있습니다. 매일 오후면 아이들의 밝은 웃음소리와 진지한 토론 소리가 들려와 보람을 느낍니다.</p>
+
+<p>다음 프로젝트로는 옆 건물의 지하실을 도서관으로 만드는 계획을 세우고 있습니다. 계속해서 우리 지역을 더 아름답게 만들어나가겠습니다!</p>`,
+    programCategory: 'remodeling',
+    programName: '공간 재창조 리모델링 사업 (실내,실외)',
+    createdAt: new Date('2024-07-10'),
+    authorId: 'admin_default',
+    authorName: '관리자'
+  },
+  {
+    id: 'footstep_006',
+    title: '모형집짓기 체험교육으로 꿈을 키우는 아이들',
+    content: `<h2>모형집짓기 체험교육 사업 성과 보고</h2>
+    
+<p>초등학교 저학년을 위한 모형집짓기 체험교육이 성공적으로 마무리되었습니다. 벽걸이용 모형집부터 두평형 모형집까지, 아이들의 수준에 맞는 다양한 프로그램으로 진행되었습니다.</p>
+
+<h3>수준별 프로그램 운영</h3>
+<ul>
+  <li><strong>벽걸이용 모형집 (1-2학년):</strong> 2시간 과정, 색칠하기와 조립 중심</li>
+  <li><strong>한평형 모형집 (3-4학년):</strong> 3시간 과정, 설계도 그리기부터 완성까지</li>
+  <li><strong>두평형 모형집 (5-6학년):</strong> 2-3일 과정, 본격적인 건축 체험</li>
+</ul>
+
+<h3>아이들의 창의력 발견</h3>
+<p>가장 인상적이었던 것은 아이들의 무한한 상상력이었습니다. 같은 재료로도 각자 다른 스타일의 집을 만들어내는 모습이 정말 놀라웠어요.</p>
+
+<blockquote>
+<p>"우리 집보다 더 예쁜 집을 만들었어요! 엄마한테 자랑해야겠어요!" - 김○○(초2)</p>
+</blockquote>
+
+<p>앞으로도 아이들의 창의성을 키울 수 있는 다양한 프로그램을 계획하고 있습니다.</p>`,
+    programCategory: 'building',
+    programName: '한평형 모형집짓기',
+    createdAt: new Date('2024-12-01'),
+    authorId: 'admin_default',
+    authorName: '관리자'
+  },
+  {
+    id: 'footstep_007',
+    title: '겨울방학 특별 원예프로그램 - 실내 정원 만들기',
+    content: `<h2>겨울방학 특별 원예프로그램 운영 후기</h2>
+    
+<p>추운 겨울에도 푸른 자연을 만날 수 있는 특별한 프로그램을 운영했습니다. 실내에서 할 수 있는 다양한 원예 활동으로 아이들에게 색다른 경험을 선사했습니다.</p>
+
+<h3>겨울 원예 활동</h3>
+<ul>
+  <li><strong>미니 온실 만들기:</strong> 페트병을 활용한 간이 온실 제작</li>
+  <li><strong>수경 재배:</strong> 물에서 키우는 새싹채소 기르기</li>
+  <li><strong>다육식물 키우기:</strong> 관리가 쉬운 다육이로 화분 꾸미기</li>
+  <li><strong>겨울 꽃 누르기:</strong> 시든 꽃으로 예술 작품 만들기</li>
+</ul>
+
+<p>겨울에도 이렇게 다양한 식물 활동을 할 수 있다는 것에 아이들이 신기해했습니다.</p>
+
+<blockquote>
+<p>"집에 가져간 다육이가 벌써 새싹이 났어요! 정말 신기해요!" - 이○○(초3)</p>
+</blockquote>
+
+<p>봄이 되면 더 다양한 야외 원예활동으로 만나뵙겠습니다!</p>`,
+    programCategory: 'gardening',
+    programName: '분경수업',
+    createdAt: new Date('2024-12-15'),
+    authorId: 'admin_default',
+    authorName: '관리자'
+  }
+]
+
 // 초기 데이터 설정 함수
 export const initializeMockData = () => {
   if (typeof window === 'undefined') return
@@ -540,6 +748,12 @@ export const initializeMockData = () => {
   if (!existingPosts) {
     localStorage.setItem('crew-posts', JSON.stringify(mockCrewPosts))
   }
+
+  // 걸어온 발자취 데이터 초기화
+  const existingFootstepPosts = localStorage.getItem('footstep-posts')
+  if (!existingFootstepPosts) {
+    localStorage.setItem('footstep-posts', JSON.stringify(mockFootstepPosts))
+  }
 }
 
 // 강제로 데이터를 새로고침하는 함수 (개발용)
@@ -549,5 +763,6 @@ export const resetMockData = () => {
   localStorage.setItem('dream-house-users', JSON.stringify(mockUsers))
   localStorage.setItem('crew-applications', JSON.stringify(mockCrewApplications))
   localStorage.setItem('crew-posts', JSON.stringify(mockCrewPosts))
+  localStorage.setItem('footstep-posts', JSON.stringify(mockFootstepPosts))
   localStorage.removeItem('dream-house-auth') // 로그아웃
 }

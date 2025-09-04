@@ -6,10 +6,10 @@ import { Button } from '@/components/ui/button'
 export function ExternalServicesTab() {
   const externalServices = [
     {
-      id: 'nhn-mail',
-      name: 'NHN Cloud 메일 서비스',
+      id: 'maily',
+      name: 'Maily 메일 서비스',
       description: '대량 메일 발송 및 메일 템플릿 관리',
-      url: 'https://www.nhncloud.com/kr/service/notification/email',
+      url: 'https://maily.so',
       icon: '📧',
       category: 'mail'
     },

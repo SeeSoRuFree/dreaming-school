@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useTheme } from '@/contexts/ThemeContext'
 import DefaultHomePage from '@/components/themes/DefaultHomePage'
 import ModernProfessionalHomePage from '@/components/themes/ModernProfessionalHomePage'
@@ -11,6 +12,15 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 export default function Home() {
   const { currentTheme } = useTheme()
+  const [heroVideoUrl, setHeroVideoUrl] = useState<string>('https://oprwxbtukrafehaotgqm.supabase.co/storage/v1/object/public/sales-storage//test.mp4')
+
+  useEffect(() => {
+    // localStorage에서 hero 동영상 URL 가져오기
+    const savedUrl = localStorage.getItem('hero-video-url')
+    if (savedUrl) {
+      setHeroVideoUrl(savedUrl)
+    }
+  }, [])
 
   const renderThemedContent = () => {
     switch (currentTheme) {
@@ -43,7 +53,7 @@ export default function Home() {
             className="w-full h-full object-cover"
             preload="auto"
           >
-            <source src="https://oprwxbtukrafehaotgqm.supabase.co/storage/v1/object/public/sales-storage//test.mp4" type="video/mp4" />
+            <source src={heroVideoUrl} type="video/mp4" />
           </video>
           {/* 테마별 오버레이 */}
           <motion.div 

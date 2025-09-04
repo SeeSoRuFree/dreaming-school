@@ -39,7 +39,7 @@ export default function InfiniteScrollGallery({ images, speed = 30 }: InfiniteSc
   
   return (
     <>
-      <div className="w-full overflow-hidden">
+      <div className="max-w-7xl mx-auto overflow-hidden">
         <div className="relative">
           <div
             className="flex gap-4 animate-scroll"

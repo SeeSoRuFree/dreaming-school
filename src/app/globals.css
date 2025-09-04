@@ -295,30 +295,30 @@ video {
   
   /* 투명 헤더용 네비게이션 링크 */
   .nav-link-transparent {
-    @apply text-white/90 hover:text-white font-medium transition-colors duration-200 
-           px-5 py-2 rounded-full hover:bg-white/10;
+    @apply text-white/90 hover:text-white font-medium text-lg transition-all duration-200 
+           px-5 py-2 rounded-full hover:bg-white/10 hover:scale-110;
   }
   
   .nav-link-active-transparent {
-    @apply text-white bg-white/20 font-medium px-5 py-2 rounded-full;
+    @apply text-white bg-white/20 font-medium text-lg px-5 py-2 rounded-full transition-all duration-200 hover:scale-110;
   }
   
   /* 파란색 네비게이션 링크 (다른 페이지) */
   .nav-link-blue {
-    @apply text-blue-700 hover:text-blue-800 font-medium transition-colors duration-200 
-           px-5 py-2 rounded-full hover:bg-blue-50;
+    @apply text-blue-700 hover:text-blue-800 font-medium text-lg transition-all duration-200 
+           px-5 py-2 rounded-full hover:bg-blue-50 hover:scale-110;
   }
   
   .nav-link-active-blue {
-    @apply text-blue-800 bg-blue-100 font-medium px-5 py-2 rounded-full;
+    @apply text-blue-800 bg-blue-100 font-medium text-lg px-5 py-2 rounded-full transition-all duration-200 hover:scale-110;
   }
   
   .nav-link {
-    @apply text-gray-700 hover:text-blue-700 font-medium transition-colors duration-200 px-5 py-2 rounded-full hover:bg-blue-50;
+    @apply text-gray-700 hover:text-blue-700 font-medium text-lg transition-all duration-200 px-5 py-2 rounded-full hover:bg-blue-50 hover:scale-110;
   }
   
   .nav-link-active {
-    @apply text-blue-700 bg-blue-50 font-medium px-5 py-2 rounded-full;
+    @apply text-blue-700 bg-blue-50 font-medium text-lg px-5 py-2 rounded-full transition-all duration-200 hover:scale-110;
   }
   
   /* 상호작용 및 애니메이션 */

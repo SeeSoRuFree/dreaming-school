@@ -1,16 +1,17 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { mockPrograms } from '@/lib/mock-data'
-import { programImages, programTitles, type ProgramCategory } from '@/lib/program-images'
+import { getAllProgramDetails } from '@/lib/program-data'
+import { programImages, type ProgramCategory } from '@/lib/program-images'
 import InfiniteScrollGallery from '@/components/ui/InfiniteScrollGallery'
-import type { Program } from '@/types'
+import type { ProgramDetail } from '@/types'
 
-// 프로그램 상세 데이터
+// 프로그램 상세 데이터 - 원래 하드코딩된 내용
 const programDetails = [
   {
+    id: '1',
     category: 'building' as ProgramCategory,
-    title: '세상에서 가장 위대한 한평 집짓기',
+    title: '한평 집짓기',
     items: [
       {
         subtitle: '실제 집짓기 체험교육',
@@ -24,8 +25,9 @@ const programDetails = [
     ]
   },
   {
-    category: 'model-building' as ProgramCategory,
-    title: '모형집짓기 체험교육 사업',
+    id: '2',
+    category: 'building' as ProgramCategory,
+    title: '모형집짓기 체험교육',
     items: [
       {
         subtitle: '수준별 맞춤형 모형 집짓기 프로그램',
@@ -39,53 +41,57 @@ const programDetails = [
     ]
   },
   {
+    id: '3',
     category: 'gardening' as ProgramCategory,
     title: '원예프로그램',
     items: [
       {
         subtitle: '자연과 교감하는 창의 체험 교육',
         details: [
-          '분경수업',
-          '테라리움수업',
-          '플렌테리어수업',
-          '정원만들기수업',
-          '압화캐릭터수업',
-          '리스화관수업',
-          '축하꽃양초수업',
-          '아로마 꽃 비누수업',
-          '우드버닝화수업'
+          '분경수업 - 작은 화분에 자연의 아름다움을 담아보는 수업',
+          '테라리움수업 - 유리병 속 작은 생태계 만들기',
+          '플렌테리어수업 - 식물을 활용한 실내 인테리어',
+          '정원만들기수업 - 직접 가꾸는 나만의 작은 정원',
+          '압화캐릭터수업 - 꽃과 잎을 이용한 창작 활동',
+          '리스화관수업 - 자연 소재로 만드는 화관',
+          '축하꽃양초수업 - 꽃 장식 양초 만들기',
+          '아로마 꽃 비누수업 - 꽃향 가득한 천연 비누 제작',
+          '우드버닝화수업 - 나무에 그리는 꽃 그림'
         ]
       }
     ]
   },
   {
+    id: '7',
     category: 'science' as ProgramCategory,
-    title: '과학창의교육 및 체험학습 사업',
+    title: '과학창의교육 및 체험학습',
     items: [
       {
         subtitle: '창의적 과학 체험 프로그램',
         details: [
-          '과학교육',
-          '창의목공'
+          '과학교육 - 실험을 통한 과학 원리 탐구',
+          '창의목공 - 과학과 목공 기술을 결합한 창작 활동'
         ]
       }
     ]
   },
   {
+    id: '5',
     category: 'rural' as ProgramCategory,
     title: '농촌활성화 사업',
     items: [
       {
         subtitle: '농촌 지역 활성화 프로그램',
         details: [
-          '농촌주민들과 함께하는 세상에서 가장 위대한 한평집짓기',
-          '농촌주민들과 함께하는 원예치유프로그램',
-          '함께하는 농촌지역 살리기 컨설팅'
+          '농촌주민들과 함께하는 세상에서 가장 위대한 한평집짓기 - 지역 주민과 함께하는 집짓기 체험',
+          '농촌주민들과 함께하는 원예치유프로그램 - 자연 치유와 원예 활동 결합',
+          '함께하는 농촌지역 살리기 컨설팅 - 지역 발전을 위한 맞춤형 컨설팅'
         ]
       }
     ]
   },
   {
+    id: '6',
     category: 'remodeling' as ProgramCategory,
     title: '공간 재창조 리모델링 사업 (실내,실외)',
     items: [
@@ -101,12 +107,12 @@ const programDetails = [
 ]
 
 export default function ProgramsPage() {
-  const [, setPrograms] = useState<Program[]>([])
+  const [storagePrograms, setStoragePrograms] = useState<ProgramDetail[]>([])
 
   useEffect(() => {
-    // 항상 최신 mock data 사용 (개발 중)
-    setPrograms(mockPrograms)
-    localStorage.setItem('programs', JSON.stringify(mockPrograms))
+    // localStorage 데이터는 ID 확인용으로만 사용
+    const programList = getAllProgramDetails()
+    setStoragePrograms(programList)
   }, [])
 
   return (
@@ -126,7 +132,7 @@ export default function ProgramsPage() {
       <section className="bg-white">
         <div className="space-y-24">
           {programDetails.map((program, index) => (
-            <div key={index} className="space-y-12">
+            <div key={program.id} className="space-y-12">
               {/* 프로그램 설명 */}
               <div className="container-main">
                 <div className="max-w-4xl mx-auto bg-gradient-to-br from-blue-50 to-white rounded-2xl p-8 md:p-12 shadow-lg">
@@ -169,7 +175,7 @@ export default function ProgramsPage() {
                     {/* 프로그램 자세히 보기 버튼 */}
                     <div className="pt-6 ml-16">
                       <a 
-                        href={`/programs/${index + 1}`} 
+                        href={`/programs/${program.id}`} 
                         className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                       >
                         <span>프로그램 자세히 보기</span>

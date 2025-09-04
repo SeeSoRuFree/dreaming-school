@@ -8,6 +8,7 @@ export default function Footer() {
   const pathname = usePathname()
   const isAdminPage = pathname?.startsWith('/admin')
   
+  // 관리자 페이지에서는 푸터 숨김
   if (isAdminPage) {
     return null
   }
@@ -37,9 +38,11 @@ export default function Footer() {
             <ul className="space-y-2">
               <li><Link href="/about" className="text-blue-100 hover:text-white transition-colors">ABOUT</Link></li>
               <li><Link href="/programs" className="text-blue-100 hover:text-white transition-colors">교육프로그램</Link></li>
+              <li><Link href="/footsteps" className="text-blue-100 hover:text-white transition-colors">걸어온 발자취</Link></li>
               <li><Link href="/news" className="text-blue-100 hover:text-white transition-colors">소식 및 공지</Link></li>
               <li><Link href="/contact" className="text-blue-100 hover:text-white transition-colors">문의하기</Link></li>
               <li><Link href="/crew-application" className="text-blue-100 hover:text-white transition-colors">크루 신청하기</Link></li>
+              <li><Link href="/admin" className="text-blue-100 hover:text-white transition-colors">관리자</Link></li>
             </ul>
           </div>
           
@@ -79,6 +82,37 @@ export default function Footer() {
               <p>설립일: 2022년 9월</p>
               <p>인가번호: 제2022-1340-SO-0455호</p>
             </div>
+          </div>
+        </div>
+        
+        {/* 협력기관 */}
+        <div className="mt-8 pt-8 border-t border-blue-700/30">
+          <h4 className="text-lg font-semibold mb-4 text-amber-400 text-center">협력기관</h4>
+          <div className="flex flex-wrap justify-center gap-4">
+            <a 
+              href="https://www.moe.go.kr/main.do?s=moe" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="bg-blue-700/20 hover:bg-blue-700/30 text-blue-100 hover:text-white px-6 py-2 rounded-lg transition-all duration-200 border border-blue-600/30 hover:border-blue-500/50"
+            >
+              교육부
+            </a>
+            <a 
+              href="https://www.socialenterprise.or.kr/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="bg-blue-700/20 hover:bg-blue-700/30 text-blue-100 hover:text-white px-6 py-2 rounded-lg transition-all duration-200 border border-blue-600/30 hover:border-blue-500/50"
+            >
+              사회적기업진흥원
+            </a>
+            <a 
+              href="https://www.sancheong.go.kr/www/index.do" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="bg-blue-700/20 hover:bg-blue-700/30 text-blue-100 hover:text-white px-6 py-2 rounded-lg transition-all duration-200 border border-blue-600/30 hover:border-blue-500/50"
+            >
+              산청군청
+            </a>
           </div>
         </div>
         

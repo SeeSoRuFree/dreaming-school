@@ -9,6 +9,7 @@ import { useAlert } from '@/hooks/useAlert'
 const navigation = [
   { name: 'ABOUT', href: '/about' },
   { name: '교육프로그램', href: '/programs' },
+  { name: '걸어온 발자취', href: '/footsteps' },
   { name: '소식 및 공지', href: '/news' },
 ]
 
@@ -18,14 +19,6 @@ export default function Header() {
   const [mounted, setMounted] = useState(false)
   const pathname = usePathname()
   const { showAlert } = useAlert()
-  
-  // 관리자 페이지 체크
-  const isAdminPage = pathname?.startsWith('/admin')
-  
-  // 관리자 페이지에서는 헤더 숨김
-  if (isAdminPage) {
-    return null
-  }
   
   // 홈페이지 체크
   const isHomePage = pathname === '/'
@@ -50,10 +43,18 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [mounted])
   
+  // 관리자 페이지 체크
+  const isAdminPage = pathname?.startsWith('/admin')
+  
   // 헤더 클래스 결정
   const headerClass = isScrolled 
     ? 'fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md shadow-md transition-all duration-300'
     : 'fixed top-0 left-0 right-0 z-50 bg-transparent transition-all duration-300'
+
+  // 관리자 페이지에서는 헤더 숨김
+  if (isAdminPage) {
+    return null
+  }
 
   return (
     <header className={headerClass}>
