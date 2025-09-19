@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { User, CrewApplication } from '@/types'
 import { mockCrewApplications, mockCrewUsers } from '@/lib/admin-mock-data'
-import { Download } from 'lucide-react'
+import { Download, Link2, CheckCircle } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -24,6 +24,7 @@ export function CrewManagementTab({ users, currentUser }: CrewManagementTabProps
   const [applications, setApplications] = useState<CrewApplication[]>([])
   const [selectedApplication, setSelectedApplication] = useState<CrewApplication | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [showCopySuccess, setShowCopySuccess] = useState(false)
 
   useEffect(() => {
     loadApplications()
@@ -81,7 +82,7 @@ export function CrewManagementTab({ users, currentUser }: CrewManagementTabProps
   const handleCSVDownload = () => {
     // CSV 헤더 정의
     const headers = ['이름', '이메일', '전화번호', '신청일', '지원동기', '관련경험', '활동가능시간', '보유기술', '상태']
-    
+
     // 데이터를 CSV 형식으로 변환
     const csvData = applications.map(app => {
       const user = getApplicantInfo(app.userId)
@@ -97,17 +98,17 @@ export function CrewManagementTab({ users, currentUser }: CrewManagementTabProps
         app.status === 'pending' ? '대기중' : app.status === 'approved' ? '승인' : '거절'
       ]
     })
-    
+
     // CSV 생성
     const csvContent = [
       headers.join(','),
       ...csvData.map(row => row.join(','))
     ].join('\n')
-    
+
     // BOM 추가 (한글 깨짐 방지)
     const BOM = '\uFEFF'
     const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' })
-    
+
     // 다운로드 실행
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
@@ -118,6 +119,17 @@ export function CrewManagementTab({ users, currentUser }: CrewManagementTabProps
     link.click()
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
+  }
+
+  const handleCopyLink = async () => {
+    const applicationUrl = `${window.location.origin}/crew-application`
+    try {
+      await navigator.clipboard.writeText(applicationUrl)
+      setShowCopySuccess(true)
+      setTimeout(() => setShowCopySuccess(false), 3000)
+    } catch (error) {
+      console.error('Failed to copy link:', error)
+    }
   }
 
   if (isLoading) {
@@ -137,14 +149,27 @@ export function CrewManagementTab({ users, currentUser }: CrewManagementTabProps
             <h2 className="heading-2 mb-2">크루 신청 목록</h2>
             <p className="text-gray-600">총 {applications.length}건의 크루 신청이 있습니다.</p>
           </div>
-          <div className="flex gap-2">
-            <Button 
+          <div className="flex gap-2 items-center">
+            <Button
               onClick={handleCSVDownload}
               className="bg-gray-600 hover:bg-gray-700 text-white"
               disabled={applications.length === 0}
             >
               <Download className="w-4 h-4 mr-2" />
               CSV 다운로드
+            </Button>
+            <Button
+              onClick={handleCopyLink}
+              className="bg-purple-600 hover:bg-purple-700 text-white relative"
+            >
+              <Link2 className="w-4 h-4 mr-2" />
+              크루 신청 링크 복사
+              {showCopySuccess && (
+                <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-3 py-1 rounded-md text-sm whitespace-nowrap flex items-center gap-1">
+                  <CheckCircle className="w-3 h-3" />
+                  복사되었습니다!
+                </div>
+              )}
             </Button>
             <Link href="/crew-application">
               <Button className="bg-blue-600 hover:bg-blue-700 text-white">

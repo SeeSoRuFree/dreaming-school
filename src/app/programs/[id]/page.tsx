@@ -30,6 +30,7 @@ export default function ProgramDetailPage() {
     loadProgram()
   }, [programId])
 
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -76,7 +77,7 @@ export default function ProgramDetailPage() {
 
       {/* 프로그램 개요 섹션 */}
       <div className="container-main py-16">
-        <div className="max-w-5xl mx-auto">
+          <div className="max-w-5xl mx-auto">
           {/* 프로그램 소개 - 간결하고 강조된 디자인 */}
           <div className="relative mb-16">
             {/* 배경 블러 효과 */}
@@ -95,7 +96,7 @@ export default function ProgramDetailPage() {
                     <span className="text-2xl">🌱</span>
                   </div>
                   <h4 className="font-semibold text-gray-900 mb-1">인성교육</h4>
-                  <p className="text-sm text-gray-600">7가지 인성 함양</p>
+                  <p className="text-sm text-gray-600">12가지 인성 함양</p>
                 </div>
                 <div className="text-center">
                   <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -119,7 +120,7 @@ export default function ProgramDetailPage() {
                   <p className="text-sm text-gray-600">미래 설계 지원</p>
                 </div>
               </div>
-              
+
               {/* 프로그램 정보 */}
               <div className="border-t border-gray-200 pt-8 mb-8">
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4 max-w-4xl mx-auto">
@@ -133,7 +134,7 @@ export default function ProgramDetailPage() {
                   </div>
                   <div className="text-center">
                     <p className="text-sm text-gray-500 mb-1">정원</p>
-                    <p className="font-medium text-gray-900">{program.maxParticipants}명</p>
+                    <p className="font-medium text-gray-900">{typeof program.maxParticipants === 'number' ? `${program.maxParticipants}명` : `${program.maxParticipants}명`}</p>
                   </div>
                   <div className="text-center">
                     <p className="text-sm text-gray-500 mb-1">비용</p>
@@ -145,7 +146,7 @@ export default function ProgramDetailPage() {
                   </div>
                 </div>
               </div>
-              
+
               {/* 신청 버튼 - 심플한 디자인 */}
               <div className="flex justify-center gap-4">
                 <Link

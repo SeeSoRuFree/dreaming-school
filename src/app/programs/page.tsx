@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { getAllProgramDetails } from '@/lib/program-data'
 import { programImages, type ProgramCategory } from '@/lib/program-images'
 import InfiniteScrollGallery from '@/components/ui/InfiniteScrollGallery'
@@ -108,11 +108,65 @@ const programDetails = [
 
 export default function ProgramsPage() {
   const [storagePrograms, setStoragePrograms] = useState<ProgramDetail[]>([])
+  const [activeCategory, setActiveCategory] = useState<string>('building')
+  const sectionRefs = useRef<{[key: string]: HTMLDivElement | null}>({})
 
   useEffect(() => {
     // localStorage 데이터는 ID 확인용으로만 사용
     const programList = getAllProgramDetails()
     setStoragePrograms(programList)
+  }, [])
+
+  // 카테고리 탭 데이터
+  const categories = [
+    { id: 'building', label: '한평집짓기' },
+    { id: 'model', label: '모형집짓기' },
+    { id: 'gardening', label: '원예' },
+    { id: 'science', label: '과학창의' },
+    { id: 'rural', label: '농촌활성화' },
+    { id: 'remodeling', label: '공간재창조' }
+  ]
+
+  // 탭 클릭 핸들러 - 해당 섹션으로 스크롤
+  const handleCategoryClick = (categoryId: string) => {
+    setActiveCategory(categoryId)
+    const element = document.getElementById(`section-${categoryId}`)
+    if (element) {
+      const offset = 120 // 네비게이션 바 높이 고려
+      const elementPosition = element.offsetTop - offset
+      window.scrollTo({
+        top: elementPosition,
+        behavior: 'smooth'
+      })
+    }
+  }
+
+  // Intersection Observer로 현재 보이는 섹션 감지
+  useEffect(() => {
+    const observerOptions = {
+      root: null,
+      rootMargin: '-100px 0px -70% 0px',
+      threshold: 0
+    }
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const categoryId = entry.target.id.replace('section-', '')
+          setActiveCategory(categoryId)
+        }
+      })
+    }
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions)
+
+    // 각 섹션 관찰 시작
+    categories.forEach(category => {
+      const element = document.getElementById(`section-${category.id}`)
+      if (element) observer.observe(element)
+    })
+
+    return () => observer.disconnect()
   }, [])
 
   return (
@@ -128,11 +182,37 @@ export default function ProgramsPage() {
         </div>
       </section>
 
+      {/* Category Navigation */}
+      <nav className="sticky top-16 z-40 bg-white">
+        <div className="container-main">
+          <div className="flex justify-center gap-2 md:gap-4 py-4">
+            {categories.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => handleCategoryClick(category.id)}
+                className={`relative px-3 md:px-5 py-2 text-sm md:text-base font-medium transition-all duration-300 ${
+                  activeCategory === category.id
+                    ? 'text-blue-700'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {category.label}
+                {activeCategory === category.id && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full" />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      </nav>
+
       {/* 프로그램 상세 섹션 */}
       <section className="bg-white">
-        <div className="space-y-24">
-          {programDetails.map((program, index) => (
-            <div key={program.id} className="space-y-12">
+        <div className="space-y-32">
+          {/* 한평 집짓기 프로그램 섹션 */}
+          <div id="section-building" className="space-y-16 pt-8">
+            {programDetails.filter(p => p.id === '1').map((program, index) => (
+              <div key={program.id} className="space-y-12">
               {/* 프로그램 설명 */}
               <div className="container-main">
                 <div className="max-w-4xl mx-auto bg-gradient-to-br from-blue-50 to-white rounded-2xl p-8 md:p-12 shadow-lg">
@@ -140,7 +220,7 @@ export default function ProgramsPage() {
                     {/* 프로그램 번호와 제목 */}
                     <div className="flex items-start gap-4">
                       <div className="flex-shrink-0 w-12 h-12 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold text-xl">
-                        {index + 1}
+                        1
                       </div>
                       <div>
                         <h2 className="text-2xl md:text-3xl font-bold text-blue-900 mb-2">
@@ -199,14 +279,374 @@ export default function ProgramsPage() {
                 />
               </div>
 
-              {/* 구분선 (마지막 항목 제외) */}
-              {index < programDetails.length - 1 && (
-                <div className="container-main">
-                  <hr className="border-gray-200" />
-                </div>
-              )}
             </div>
-          ))}
+            ))}
+          </div>
+
+          {/* 모형집짓기 프로그램 섹션 */}
+          <div id="section-model" className="space-y-16 pt-8">
+            {programDetails.filter(p => p.id === '2').map((program, index) => (
+              <div key={program.id} className="space-y-12">
+              {/* 프로그램 설명 */}
+              <div className="container-main">
+                <div className="max-w-4xl mx-auto bg-gradient-to-br from-blue-50 to-white rounded-2xl p-8 md:p-12 shadow-lg">
+                  <div className="space-y-6">
+                    {/* 프로그램 번호와 제목 */}
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 w-12 h-12 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold text-xl">
+                        2
+                      </div>
+                      <div>
+                        <h2 className="text-2xl md:text-3xl font-bold text-blue-900 mb-2">
+                          {program.title}
+                        </h2>
+                      </div>
+                    </div>
+
+                    {program.items.map((item, itemIndex) => (
+                      <div key={itemIndex} className="space-y-4 ml-16">
+                        {item.subtitle && (
+                          <h3 className="text-lg font-semibold text-gray-800 border-l-4 border-blue-400 pl-4 bg-white p-4 rounded-lg">
+                            {item.subtitle}
+                          </h3>
+                        )}
+
+                        {item.details.length > 0 && (
+                          <ul className="space-y-3 ml-4">
+                            {item.details.map((detail, detailIndex) => (
+                              <li key={detailIndex} className="flex items-start">
+                                <svg className="w-5 h-5 text-blue-500 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                </svg>
+                                <span className="text-gray-700 leading-relaxed">{detail}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    ))}
+
+                    {/* 프로그램 자세히 보기 버튼 */}
+                    <div className="pt-6 ml-16">
+                      <a
+                        href={`/programs/${program.id}`}
+                        className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                      >
+                        <span>프로그램 자세히 보기</span>
+                        <svg className="ml-3 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 무한 스크롤 이미지 갤러리 - 전체 너비 */}
+              <div className="w-full overflow-hidden">
+                <InfiniteScrollGallery
+                  images={programImages[program.category].map((src, idx) => ({
+                    src,
+                    alt: `${program.title} ${idx + 1}`
+                  }))}
+                  speed={40} // 모든 프로그램 동일한 속도
+                />
+              </div>
+            </div>
+            ))}
+          </div>
+
+          {/* 원예 프로그램 섹션 */}
+          <div id="section-gardening" className="space-y-16 pt-8">
+            {programDetails.filter(p => p.category === 'gardening').map((program, index) => (
+              <div key={program.id} className="space-y-12">
+              {/* 프로그램 설명 */}
+              <div className="container-main">
+                <div className="max-w-4xl mx-auto bg-gradient-to-br from-blue-50 to-white rounded-2xl p-8 md:p-12 shadow-lg">
+                  <div className="space-y-6">
+                    {/* 프로그램 번호와 제목 */}
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 w-12 h-12 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold text-xl">
+                        3
+                      </div>
+                      <div>
+                        <h2 className="text-2xl md:text-3xl font-bold text-blue-900 mb-2">
+                          {program.title}
+                        </h2>
+                      </div>
+                    </div>
+
+                    {program.items.map((item, itemIndex) => (
+                      <div key={itemIndex} className="space-y-4 ml-16">
+                        {item.subtitle && (
+                          <h3 className="text-lg font-semibold text-gray-800 border-l-4 border-blue-400 pl-4 bg-white p-4 rounded-lg">
+                            {item.subtitle}
+                          </h3>
+                        )}
+
+                        {item.details.length > 0 && (
+                          <ul className="space-y-3 ml-4">
+                            {item.details.map((detail, detailIndex) => (
+                              <li key={detailIndex} className="flex items-start">
+                                <svg className="w-5 h-5 text-blue-500 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                </svg>
+                                <span className="text-gray-700 leading-relaxed">{detail}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    ))}
+
+                    {/* 프로그램 자세히 보기 버튼 */}
+                    <div className="pt-6 ml-16">
+                      <a
+                        href={`/programs/${program.id}`}
+                        className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                      >
+                        <span>프로그램 자세히 보기</span>
+                        <svg className="ml-3 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 무한 스크롤 이미지 갤러리 - 전체 너비 */}
+              <div className="w-full overflow-hidden">
+                <InfiniteScrollGallery
+                  images={programImages[program.category].map((src, idx) => ({
+                    src,
+                    alt: `${program.title} ${idx + 1}`
+                  }))}
+                  speed={40} // 모든 프로그램 동일한 속도
+                />
+              </div>
+            </div>
+            ))}
+          </div>
+
+          {/* 과학창의 프로그램 섹션 */}
+          <div id="section-science" className="space-y-16 pt-8">
+            {programDetails.filter(p => p.category === 'science').map((program, index) => (
+              <div key={program.id} className="space-y-12">
+              {/* 프로그램 설명 */}
+              <div className="container-main">
+                <div className="max-w-4xl mx-auto bg-gradient-to-br from-blue-50 to-white rounded-2xl p-8 md:p-12 shadow-lg">
+                  <div className="space-y-6">
+                    {/* 프로그램 번호와 제목 */}
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 w-12 h-12 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold text-xl">
+                        4
+                      </div>
+                      <div>
+                        <h2 className="text-2xl md:text-3xl font-bold text-blue-900 mb-2">
+                          {program.title}
+                        </h2>
+                      </div>
+                    </div>
+
+                    {program.items.map((item, itemIndex) => (
+                      <div key={itemIndex} className="space-y-4 ml-16">
+                        {item.subtitle && (
+                          <h3 className="text-lg font-semibold text-gray-800 border-l-4 border-blue-400 pl-4 bg-white p-4 rounded-lg">
+                            {item.subtitle}
+                          </h3>
+                        )}
+
+                        {item.details.length > 0 && (
+                          <ul className="space-y-3 ml-4">
+                            {item.details.map((detail, detailIndex) => (
+                              <li key={detailIndex} className="flex items-start">
+                                <svg className="w-5 h-5 text-blue-500 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                </svg>
+                                <span className="text-gray-700 leading-relaxed">{detail}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    ))}
+
+                    {/* 프로그램 자세히 보기 버튼 */}
+                    <div className="pt-6 ml-16">
+                      <a
+                        href={`/programs/${program.id}`}
+                        className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                      >
+                        <span>프로그램 자세히 보기</span>
+                        <svg className="ml-3 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 무한 스크롤 이미지 갤러리 - 전체 너비 */}
+              <div className="w-full overflow-hidden">
+                <InfiniteScrollGallery
+                  images={programImages[program.category].map((src, idx) => ({
+                    src,
+                    alt: `${program.title} ${idx + 1}`
+                  }))}
+                  speed={40} // 모든 프로그램 동일한 속도
+                />
+              </div>
+            </div>
+            ))}
+          </div>
+
+          {/* 농촌활성화 프로그램 섹션 */}
+          <div id="section-rural" className="space-y-16 pt-8">
+            {programDetails.filter(p => p.category === 'rural').map((program, index) => (
+              <div key={program.id} className="space-y-12">
+              {/* 프로그램 설명 */}
+              <div className="container-main">
+                <div className="max-w-4xl mx-auto bg-gradient-to-br from-blue-50 to-white rounded-2xl p-8 md:p-12 shadow-lg">
+                  <div className="space-y-6">
+                    {/* 프로그램 번호와 제목 */}
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 w-12 h-12 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold text-xl">
+                        5
+                      </div>
+                      <div>
+                        <h2 className="text-2xl md:text-3xl font-bold text-blue-900 mb-2">
+                          {program.title}
+                        </h2>
+                      </div>
+                    </div>
+
+                    {program.items.map((item, itemIndex) => (
+                      <div key={itemIndex} className="space-y-4 ml-16">
+                        {item.subtitle && (
+                          <h3 className="text-lg font-semibold text-gray-800 border-l-4 border-blue-400 pl-4 bg-white p-4 rounded-lg">
+                            {item.subtitle}
+                          </h3>
+                        )}
+
+                        {item.details.length > 0 && (
+                          <ul className="space-y-3 ml-4">
+                            {item.details.map((detail, detailIndex) => (
+                              <li key={detailIndex} className="flex items-start">
+                                <svg className="w-5 h-5 text-blue-500 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                </svg>
+                                <span className="text-gray-700 leading-relaxed">{detail}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    ))}
+
+                    {/* 프로그램 자세히 보기 버튼 */}
+                    <div className="pt-6 ml-16">
+                      <a
+                        href={`/programs/${program.id}`}
+                        className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                      >
+                        <span>프로그램 자세히 보기</span>
+                        <svg className="ml-3 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 무한 스크롤 이미지 갤러리 - 전체 너비 */}
+              <div className="w-full overflow-hidden">
+                <InfiniteScrollGallery
+                  images={programImages[program.category].map((src, idx) => ({
+                    src,
+                    alt: `${program.title} ${idx + 1}`
+                  }))}
+                  speed={40} // 모든 프로그램 동일한 속도
+                />
+              </div>
+            </div>
+            ))}
+          </div>
+
+          {/* 리모델링 프로그램 섹션 */}
+          <div id="section-remodeling" className="space-y-16 pt-8">
+            {programDetails.filter(p => p.category === 'remodeling').map((program, index) => (
+              <div key={program.id} className="space-y-12">
+              {/* 프로그램 설명 */}
+              <div className="container-main">
+                <div className="max-w-4xl mx-auto bg-gradient-to-br from-blue-50 to-white rounded-2xl p-8 md:p-12 shadow-lg">
+                  <div className="space-y-6">
+                    {/* 프로그램 번호와 제목 */}
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 w-12 h-12 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold text-xl">
+                        6
+                      </div>
+                      <div>
+                        <h2 className="text-2xl md:text-3xl font-bold text-blue-900 mb-2">
+                          {program.title}
+                        </h2>
+                      </div>
+                    </div>
+
+                    {program.items.map((item, itemIndex) => (
+                      <div key={itemIndex} className="space-y-4 ml-16">
+                        {item.subtitle && (
+                          <h3 className="text-lg font-semibold text-gray-800 border-l-4 border-blue-400 pl-4 bg-white p-4 rounded-lg">
+                            {item.subtitle}
+                          </h3>
+                        )}
+
+                        {item.details.length > 0 && (
+                          <ul className="space-y-3 ml-4">
+                            {item.details.map((detail, detailIndex) => (
+                              <li key={detailIndex} className="flex items-start">
+                                <svg className="w-5 h-5 text-blue-500 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                </svg>
+                                <span className="text-gray-700 leading-relaxed">{detail}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    ))}
+
+                    {/* 프로그램 자세히 보기 버튼 */}
+                    <div className="pt-6 ml-16">
+                      <a
+                        href={`/programs/${program.id}`}
+                        className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                      >
+                        <span>프로그램 자세히 보기</span>
+                        <svg className="ml-3 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 무한 스크롤 이미지 갤러리 - 전체 너비 */}
+              <div className="w-full overflow-hidden">
+                <InfiniteScrollGallery
+                  images={programImages[program.category].map((src, idx) => ({
+                    src,
+                    alt: `${program.title} ${idx + 1}`
+                  }))}
+                  speed={40} // 모든 프로그램 동일한 속도
+                />
+              </div>
+            </div>
+            ))}
+          </div>
         </div>
       </section>
 

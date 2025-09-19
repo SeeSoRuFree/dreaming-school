@@ -10,7 +10,7 @@ const initialProgramData: Record<string, ProgramDetail> = {
     description: '세상에서 가장 위대한 한평 집 짓기는 인성교육과 함께 10주~12주간 아이들이 직접 집을 지으며 꿈과 비전을 키우는 프로그램입니다.',
     target: '초중고학생, 성인',
     duration: '10주~12주간',
-    maxParticipants: 20,
+    maxParticipants: '10~20',
     fee: '문의',
     location: '문의',
     category: 'building',
@@ -527,10 +527,17 @@ const initialProgramData: Record<string, ProgramDetail> = {
 
 export const initializeProgramData = () => {
   if (typeof window === 'undefined') return
-  
+
   const existingData = localStorage.getItem(STORAGE_KEY)
   if (!existingData) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(initialProgramData))
+  } else {
+    // Update program 1 with the new maxParticipants value if it's still showing old value
+    const data = JSON.parse(existingData)
+    if (data['1'] && data['1'].maxParticipants === 20) {
+      data['1'].maxParticipants = '10~20'
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+    }
   }
 }
 

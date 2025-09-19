@@ -26,7 +26,7 @@ export interface ProgramDetail {
   description: string
   target: string
   duration: string
-  maxParticipants: number
+  maxParticipants: number | string
   fee: string
   location: string
   sessions: ProgramSession[]
