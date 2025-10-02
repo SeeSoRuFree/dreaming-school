@@ -3,131 +3,62 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAdminAuth } from '@/hooks/useAdminAuth'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { User, News, GeneralInquiry, DonationInquiry, FootstepPost } from '@/types'
-import { mockNews, mockGeneralInquiries } from '@/lib/mock-data'
-import { initializeAdminMockData } from '@/lib/admin-mock-data'
-import { useAlert } from '@/hooks/useAlert'
-import { CrewManagementTab } from './crew-management'
-import { MediaManagementTab } from './media-management'
-import { ExternalServicesTab } from './external-services'
-import { NewsManagementTab } from './news-management'
-import { InquiryManagementTab } from './inquiry-management'
-import { ProgramManagementTab } from './program-management'
-import FootstepsManagementTab from './footsteps-management'
+import { AdminLayout } from '@/components/admin/AdminLayout'
+import {
+  Users,
+  GraduationCap,
+  MessageSquare,
+  Footprints,
+  TrendingUp,
+  Calendar
+} from 'lucide-react'
 
-export default function AdminPage() {
+interface DashboardStats {
+  totalPrograms: number
+  totalFootsteps: number
+  totalInquiries: number
+  totalCrewApplications: number
+}
+
+export default function AdminDashboardPage() {
   const router = useRouter()
-  const { isAdmin, isLoading: authLoading, logout } = useAdminAuth()
-  const { showAlert } = useAlert()
-  const [activeTab, setActiveTab] = useState<'news' | 'inquiry' | 'media' | 'external' | 'crew' | 'programs' | 'footsteps'>('media')
-  const [users, setUsers] = useState<User[]>([])
-  const [news, setNews] = useState<News[]>([])
-  const [generalInquiries, setGeneralInquiries] = useState<GeneralInquiry[]>([])
-  const [donationInquiries, setDonationInquiries] = useState<DonationInquiry[]>([])
-  const [footstepPosts, setFootstepPosts] = useState<FootstepPost[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [currentUser] = useState<User>({
-    id: 'admin',
-    name: '관리자',
-    email: 'admin@dreamschool.com',
-    phone: '010-0000-0000',
-    password: '',
-    role: 'admin',
-    gender: 'other',
-    joinPath: 'system',
-    firstImpression: '',
-    createdAt: new Date()
+  const { isAdmin, isLoading } = useAdminAuth()
+  const [stats, setStats] = useState<DashboardStats>({
+    totalPrograms: 0,
+    totalFootsteps: 0,
+    totalInquiries: 0,
+    totalCrewApplications: 0,
   })
 
   useEffect(() => {
-    if (authLoading) return
+    if (isLoading) return
 
     if (!isAdmin) {
       router.push('/admin/login')
       return
     }
 
-    const loadData = () => {
-      try {
-        // Initialize mock data for testing
-        initializeAdminMockData()
-        
-        // Load users
-        const usersData = localStorage.getItem('dream-house-users')
-        if (usersData) {
-          setUsers(JSON.parse(usersData))
-        }
+    // 실제 환경에서는 API를 통해 데이터 로드
+    // 현재는 구조만 잡아둠
+    loadDashboardStats()
+  }, [isAdmin, isLoading, router])
 
-        // Load news
-        const newsData = localStorage.getItem('dream-house-news')
-        if (newsData) {
-          setNews(JSON.parse(newsData))
-        } else {
-          localStorage.setItem('dream-house-news', JSON.stringify(mockNews))
-          setNews(mockNews)
-        }
+  const loadDashboardStats = async () => {
+    // API 호출 예정 위치
+    // const data = await fetch('/api/admin/dashboard').then(res => res.json())
 
-        // Load general inquiries
-        const generalInquiriesData = localStorage.getItem('general-inquiries')
-        if (generalInquiriesData) {
-          const parsedInquiries = JSON.parse(generalInquiriesData)
-          const inquiriesWithDates = parsedInquiries.map((inquiry: any) => ({
-            ...inquiry,
-            createdAt: new Date(inquiry.createdAt),
-            replies: inquiry.replies?.map((reply: any) => ({
-              ...reply,
-              createdAt: new Date(reply.createdAt)
-            })) || []
-          }))
-          setGeneralInquiries(inquiriesWithDates)
-        } else {
-          localStorage.setItem('general-inquiries', JSON.stringify(mockGeneralInquiries))
-          setGeneralInquiries(mockGeneralInquiries)
-        }
+    // 임시 통계 (실제로는 데이터베이스에서 가져옴)
+    setStats({
+      totalPrograms: 0,
+      totalFootsteps: 0,
+      totalInquiries: 0,
+      totalCrewApplications: 0,
+    })
+  }
 
-        // Load donation inquiries
-        const donationInquiriesData = localStorage.getItem('donation-inquiries')
-        if (donationInquiriesData) {
-          const parsedDonationInquiries = JSON.parse(donationInquiriesData)
-          const donationInquiriesWithDates = parsedDonationInquiries.map((inquiry: any) => ({
-            ...inquiry,
-            createdAt: new Date(inquiry.createdAt)
-          }))
-          setDonationInquiries(donationInquiriesWithDates)
-        } else {
-          setDonationInquiries([])
-        }
-
-        // Load footstep posts
-        const footstepPostsData = localStorage.getItem('footstep-posts')
-        if (footstepPostsData) {
-          const parsedPosts = JSON.parse(footstepPostsData)
-          const postsWithDates = parsedPosts.map((post: any) => ({
-            ...post,
-            createdAt: new Date(post.createdAt),
-            updatedAt: post.updatedAt ? new Date(post.updatedAt) : undefined
-          }))
-          setFootstepPosts(postsWithDates)
-        } else {
-          setFootstepPosts([])
-        }
-
-        setIsLoading(false)
-      } catch (error) {
-        console.error('Failed to load admin data:', error)
-        setIsLoading(false)
-      }
-    }
-
-    loadData()
-  }, [isAdmin, authLoading, router])
-
-
-  if (authLoading) {
+  if (isLoading) {
     return (
-      <div className="container-main section-padding">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-700"></div>
           <p className="mt-4 text-gray-600">로딩 중...</p>
@@ -140,152 +71,128 @@ export default function AdminPage() {
     return null
   }
 
-  if (isLoading) {
-    return (
-      <div className="container-main section-padding">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-700"></div>
-          <p className="mt-4 text-gray-600">관리자 데이터를 불러오는 중...</p>
-        </div>
-      </div>
-    )
-  }
-
+  const statCards = [
+    {
+      title: '교육 프로그램',
+      value: stats.totalPrograms,
+      icon: GraduationCap,
+      color: 'bg-blue-500',
+      link: '/admin/programs'
+    },
+    {
+      title: '걸어온 발자취',
+      value: stats.totalFootsteps,
+      icon: Footprints,
+      color: 'bg-green-500',
+      link: '/admin/footsteps'
+    },
+    {
+      title: '일반 문의',
+      value: stats.totalInquiries,
+      icon: MessageSquare,
+      color: 'bg-amber-500',
+      link: '/admin/inquiries/general'
+    },
+    {
+      title: '크루 신청',
+      value: stats.totalCrewApplications,
+      icon: Users,
+      color: 'bg-purple-500',
+      link: '/admin/crew'
+    },
+  ]
 
   return (
-    <div className="container-main section-padding">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="heading-1">관리자 대시보드</h1>
-              <p className="text-gray-600 mt-4">
-                꿈을짓는학교의 전체 현황과 회원 관리를 위한 관리자 페이지입니다.
+    <AdminLayout>
+      <div className="space-y-8">
+        {/* 환영 메시지 */}
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-8 text-white">
+          <h1 className="text-3xl font-bold mb-2">관리자 대시보드</h1>
+          <p className="text-blue-100">
+            꿈을 짓는 학교 관리 시스템에 오신 것을 환영합니다.
+          </p>
+        </div>
+
+        {/* 통계 카드 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {statCards.map((card) => {
+            const Icon = card.icon
+            return (
+              <div
+                key={card.title}
+                className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className={`${card.color} p-3 rounded-lg`}>
+                    <Icon className="w-6 h-6 text-white" />
+                  </div>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-1">
+                  {card.value}
+                </h3>
+                <p className="text-sm text-gray-600">{card.title}</p>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* 최근 활동 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* 최근 문의 */}
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900">최근 문의</h2>
+              <MessageSquare className="w-5 h-5 text-gray-400" />
+            </div>
+            <div className="space-y-3">
+              <p className="text-sm text-gray-500 text-center py-8">
+                문의 데이터가 없습니다.
               </p>
             </div>
-            <button
-              onClick={logout}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+          </div>
+
+          {/* 최근 크루 신청 */}
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900">최근 크루 신청</h2>
+              <Users className="w-5 h-5 text-gray-400" />
+            </div>
+            <div className="space-y-3">
+              <p className="text-sm text-gray-500 text-center py-8">
+                크루 신청 데이터가 없습니다.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* 빠른 액세스 */}
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">빠른 액세스</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a
+              href="/admin/programs"
+              className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors"
             >
-              로그아웃
-            </button>
+              <GraduationCap className="w-5 h-5 text-blue-600" />
+              <span className="text-sm font-medium text-gray-700">프로그램 관리</span>
+            </a>
+            <a
+              href="/admin/news"
+              className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:border-green-300 hover:bg-green-50 transition-colors"
+            >
+              <Calendar className="w-5 h-5 text-green-600" />
+              <span className="text-sm font-medium text-gray-700">소식/공지 관리</span>
+            </a>
+            <a
+              href="/admin/crew"
+              className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition-colors"
+            >
+              <Users className="w-5 h-5 text-purple-600" />
+              <span className="text-sm font-medium text-gray-700">크루 관리</span>
+            </a>
           </div>
         </div>
-
-        {/* Tab Navigation */}
-        <div className="mb-8">
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex flex-wrap gap-x-6 gap-y-2">
-              <button
-                onClick={() => setActiveTab('media')}
-                className={`py-3 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'media'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                메인페이지 동영상
-              </button>
-              <button
-                onClick={() => setActiveTab('programs')}
-                className={`py-3 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'programs'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                프로그램 관리
-              </button>
-              <button
-                onClick={() => setActiveTab('footsteps')}
-                className={`py-3 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'footsteps'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                발자취 관리
-              </button>
-              <button
-                onClick={() => setActiveTab('news')}
-                className={`py-3 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'news'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                소식/공지 관리
-              </button>
-              <button
-                onClick={() => setActiveTab('inquiry')}
-                className={`py-3 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'inquiry'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                문의 관리
-              </button>
-              <button
-                onClick={() => setActiveTab('external')}
-                className={`py-3 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'external'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                메일/문자 관리
-              </button>
-              <button
-                onClick={() => setActiveTab('crew')}
-                className={`py-3 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'crew'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                크루 관리
-              </button>
-            </nav>
-          </div>
-        </div>
-
-        {activeTab === 'programs' && (
-          <ProgramManagementTab />
-        )}
-
-        {activeTab === 'footsteps' && (
-          <FootstepsManagementTab posts={footstepPosts} setPosts={setFootstepPosts} currentUser={currentUser} />
-        )}
-
-        {activeTab === 'media' && (
-          <MediaManagementTab />
-        )}
-
-        {activeTab === 'external' && (
-          <ExternalServicesTab />
-        )}
-
-        {activeTab === 'crew' && (
-          <CrewManagementTab users={users} currentUser={currentUser} />
-        )}
-
-        {activeTab === 'news' && (
-          <NewsManagementTab news={news} setNews={setNews} currentUser={currentUser} />
-        )}
-
-        {activeTab === 'inquiry' && (
-          <InquiryManagementTab 
-            generalInquiries={generalInquiries} 
-            setGeneralInquiries={setGeneralInquiries}
-            donationInquiries={donationInquiries}
-            setDonationInquiries={setDonationInquiries}
-            currentUser={currentUser} 
-          />
-        )}
       </div>
-    </div>
+    </AdminLayout>
   )
 }
-

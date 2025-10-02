@@ -26,13 +26,33 @@ export interface ProgramDetail {
   description: string
   target: string
   duration: string
-  maxParticipants: number | string
+  max_participants: number | string
   fee: string
   location: string
   sessions: ProgramSession[]
   category: 'building' | 'gardening' | 'science' | 'rural' | 'remodeling'
-  createdAt: Date
-  updatedAt?: Date
+  is_active: boolean
+  created_at: Date
+  updated_at?: Date
+}
+
+export interface ProgramSessionData {
+  id: string
+  program_id: string
+  order_num: number
+  title: string
+  description: string
+  created_at: Date
+  updated_at?: Date
+  images?: ProgramSessionImage[]
+}
+
+export interface ProgramSessionImage {
+  id: string
+  session_id: string
+  image_url: string
+  order_num: number
+  created_at: Date
 }
 
 export interface News {
@@ -193,4 +213,13 @@ export interface FootstepPost {
   updatedAt?: Date
   authorId: string
   authorName: string
+}
+
+export interface MediaCoverage {
+  id: string
+  mediaOutlet: string
+  title: string
+  articleUrl: string
+  publishedAt: Date
+  createdAt: Date
 }

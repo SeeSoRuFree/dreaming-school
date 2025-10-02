@@ -3,9 +3,11 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Card } from "@/components/ui/card"
-import { mockNews } from '@/lib/mock-data'
 import { News } from '@/types'
-import { Calendar, ChevronRight, Bell, Newspaper, Search } from 'lucide-react'
+import { Calendar, ChevronRight, Bell, Newspaper, Search, Star } from 'lucide-react'
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 function NewsContent() {
   const router = useRouter()
@@ -14,24 +16,44 @@ function NewsContent() {
   const [selectedNews, setSelectedNews] = useState<News | null>(null)
   const [newsData, setNewsData] = useState<News[]>([])
   const [searchQuery, setSearchQuery] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
 
   // 뉴스 데이터 로드
   useEffect(() => {
-    const loadNewsData = () => {
-      const savedNews = localStorage.getItem('dream-house-news')
-      if (savedNews) {
-        const parsedNews = JSON.parse(savedNews)
-        // Date 객체로 변환
-        const newsWithDates = parsedNews.map((news: any) => ({
-          ...news,
-          createdAt: new Date(news.createdAt),
-          updatedAt: news.updatedAt ? new Date(news.updatedAt) : undefined
+    const loadNewsData = async () => {
+      try {
+        setIsLoading(true)
+        const response = await fetch(
+          `${SUPABASE_URL}/rest/v1/news?select=*&order=created_at.desc`,
+          {
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            },
+          }
+        )
+
+        if (!response.ok) {
+          throw new Error('데이터를 불러오지 못했습니다.')
+        }
+
+        const data = await response.json()
+        const formattedNews: News[] = data.map((item: any) => ({
+          id: item.id,
+          title: item.title,
+          content: item.content,
+          category: item.category,
+          createdAt: new Date(item.created_at),
+          updatedAt: item.updated_at ? new Date(item.updated_at) : undefined,
+          featured: item.featured || false,
         }))
-        setNewsData(newsWithDates)
-      } else {
-        // localStorage에 mockNews 저장
-        localStorage.setItem('dream-house-news', JSON.stringify(mockNews))
-        setNewsData(mockNews)
+
+        setNewsData(formattedNews)
+      } catch (error) {
+        console.error('Failed to load news:', error)
+        setNewsData([])
+      } finally {
+        setIsLoading(false)
       }
     }
     loadNewsData()
@@ -86,7 +108,7 @@ function NewsContent() {
     return (
       <>
         {/* Hero Section */}
-        <section className="bg-gradient-to-b from-blue-50 to-white">
+        <section className="bg-gradient-to-b from-orange-50 to-white pt-24">
           <div className="container-main py-16">
             <button
               onClick={() => router.push('/news')}
@@ -100,6 +122,12 @@ function NewsContent() {
                 {getCategoryIcon(selectedNews.category)}
                 <span>{getCategoryName(selectedNews.category)}</span>
               </div>
+              {selectedNews.featured && (
+                <div className="flex items-center gap-1 px-3 py-1 bg-amber-100 text-amber-700 rounded-lg text-sm font-medium">
+                  <Star className="w-4 h-4" />
+                  <span>중요</span>
+                </div>
+              )}
               <div className="flex items-center gap-2 text-gray-600">
                 <Calendar className="w-4 h-4" />
                 <span>{formatDate(selectedNews.createdAt)}</span>
@@ -112,15 +140,10 @@ function NewsContent() {
         <div className="container-main section-padding">
           <div className="max-w-4xl mx-auto">
             <Card className="p-8 md:p-12">
-              <div className="prose prose-lg max-w-none">
-                {selectedNews.content.split('\n').map((paragraph, index) => (
-                  paragraph.trim() && (
-                    <p key={index} className="body-text mb-6 leading-relaxed">
-                      {paragraph}
-                    </p>
-                  )
-                ))}
-              </div>
+              <div
+                className="prose prose-lg max-w-none"
+                dangerouslySetInnerHTML={{ __html: selectedNews.content }}
+              />
             </Card>
           </div>
         </div>
@@ -128,10 +151,19 @@ function NewsContent() {
     )
   }
 
+  if (isLoading) {
+    return (
+      <div className="container-main py-32 text-center">
+        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700"></div>
+        <p className="mt-4 text-gray-600">로딩 중...</p>
+      </div>
+    )
+  }
+
   return (
     <>
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-blue-50 to-white pt-24">
+      <section className="bg-gradient-to-b from-orange-50 to-white pt-24">
         <div className="container-main py-16">
           <h1 className="heading-1 text-center">소식·공지</h1>
           <p className="body-text text-center mt-6 max-w-3xl mx-auto text-gray-600">
@@ -165,7 +197,7 @@ function NewsContent() {
                   </button>
                 ))}
               </div>
-              
+
               {/* Search Box */}
               <div className="relative w-full md:w-96">
                 <input
@@ -188,19 +220,25 @@ function NewsContent() {
         <div className="max-w-5xl mx-auto">
           <div className="space-y-4">
             {sortedNews.map((news) => (
-              <Card 
-                key={news.id} 
+              <Card
+                key={news.id}
                 className="hover:shadow-lg transition-all duration-300 cursor-pointer border-0 shadow-sm hover:-translate-y-1"
                 onClick={() => router.push(`/news?id=${news.id}`)}
               >
                 <div className="p-6">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <div className="flex items-center gap-4 mb-3">
+                      <div className="flex items-center gap-2 mb-3 flex-wrap">
                         <div className="flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium">
                           {getCategoryIcon(news.category)}
                           <span>{getCategoryName(news.category)}</span>
                         </div>
+                        {news.featured && (
+                          <div className="flex items-center gap-1 px-3 py-1 bg-amber-100 text-amber-700 rounded-lg text-sm font-medium">
+                            <Star className="w-3 h-3" />
+                            <span>중요</span>
+                          </div>
+                        )}
                         <div className="flex items-center gap-2 text-sm text-gray-500">
                           <Calendar className="w-4 h-4" />
                           <span>{formatDate(news.createdAt)}</span>
@@ -210,7 +248,7 @@ function NewsContent() {
                         {news.title}
                       </h3>
                       <p className="text-gray-600 leading-relaxed line-clamp-2">
-                        {news.content.replace(/\n/g, ' ').substring(0, 180)}...
+                        {news.content.replace(/<[^>]*>?/gm, '').replace(/\n/g, ' ').substring(0, 180)}...
                       </p>
                     </div>
                     <div className="ml-6 flex-shrink-0">

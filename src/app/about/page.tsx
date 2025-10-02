@@ -6,6 +6,7 @@ import { MapPin, Phone, Clock, Car, Bus, Train, CheckCircle, Calendar, CheckCirc
 
 export default function AboutPage() {
   const [activeSection, setActiveSection] = useState('about')
+  const [isScrolling, setIsScrolling] = useState(false)
   
   const coreValues = [
     { title: '양선', description: '우리는 모든 교육과정, 내부운영과정을 선한 양심으로 운영하겠습니다.' },
@@ -126,7 +127,7 @@ export default function AboutPage() {
       year: "2022",
       title: "사회적협동조합 창립과 인가",
       icon: <Building2 className="w-6 h-6" />,
-      color: "from-blue-600 to-indigo-600",
+      color: "from-orange-500 to-pink-500",
       highlights: [
         "창립총회 (5월 6일)",
         "교육부 인가 (8월)",
@@ -183,6 +184,9 @@ export default function AboutPage() {
 
   // 스크롤 이벤트 처리
   const handleNavClick = (sectionId: string) => {
+    setIsScrolling(true)
+    setActiveSection(sectionId)
+
     const element = document.getElementById(sectionId)
     if (element) {
       const offset = 100 // 네비게이션 바 높이 고려
@@ -191,6 +195,11 @@ export default function AboutPage() {
         top: elementPosition,
         behavior: 'smooth'
       })
+
+      // 스크롤 완료 후 플래그 해제 (스크롤 애니메이션 시간 고려)
+      setTimeout(() => {
+        setIsScrolling(false)
+      }, 1000)
     }
   }
 
@@ -203,6 +212,9 @@ export default function AboutPage() {
     }
 
     const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      // 사용자가 직접 스크롤 중일 때는 Observer 무시
+      if (isScrolling) return
+
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           setActiveSection(entry.target.id)
@@ -219,12 +231,39 @@ export default function AboutPage() {
     })
 
     return () => observer.disconnect()
+  }, [isScrolling])
+
+  // URL 해시로 스크롤 처리
+  useEffect(() => {
+    const hash = window.location.hash.replace('#', '')
+    if (hash) {
+      setIsScrolling(true)
+      setActiveSection(hash)
+
+      // 페이지 로드 후 약간의 지연을 두고 스크롤
+      setTimeout(() => {
+        const element = document.getElementById(hash)
+        if (element) {
+          const offset = 120
+          const elementPosition = element.offsetTop - offset
+          window.scrollTo({
+            top: elementPosition,
+            behavior: 'smooth'
+          })
+
+          // 스크롤 완료 후 플래그 해제
+          setTimeout(() => {
+            setIsScrolling(false)
+          }, 1000)
+        }
+      }, 100)
+    }
   }, [])
 
   return (
     <>
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-blue-50 to-white pt-24">
+      <section className="bg-gradient-to-b from-orange-50 to-white pt-24">
         <div className="container-main py-16">
           <h1 className="heading-1 text-center">꿈을짓는 학교는?</h1>
           <p className="body-text text-center mt-6 max-w-3xl mx-auto text-gray-600">
@@ -265,7 +304,7 @@ export default function AboutPage() {
             <p className="text-xl text-gray-600">꿈을짓는학교 사회적협동조합을 소개합니다</p>
           </div>
           <div className="max-w-5xl mx-auto">
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-8 md:p-12 mb-12 shadow-lg">
+            <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-2xl p-8 md:p-12 mb-12 shadow-lg">
               <p className="body-text leading-relaxed">
                 꿈을짓는학교는 교육서비스 제공을 주업으로 성적중심 교육환경 속에서 OECD 국가 청소년 행복지수가 최하위인 청소년들에게 집단성취감을 통한 바른 품성과 자긍심 회복, 그리고 로컬리티 활성화를 목적으로 설립된 사회적협동조합입니다.
               </p>
@@ -277,7 +316,7 @@ export default function AboutPage() {
               </p>
             </div>
             
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white text-center py-8 px-8 rounded-2xl shadow-xl mb-12">
+            <div className="bg-gradient-to-r from-orange-500 to-pink-500 text-white text-center py-8 px-8 rounded-2xl shadow-xl mb-12">
               <div className="max-w-4xl mx-auto">
                 <h3 className="text-2xl font-bold mb-4">교육 철학</h3>
                 <p className="text-xl font-medium leading-relaxed">
@@ -325,7 +364,7 @@ export default function AboutPage() {
           <div className="grid md:grid-cols-5 gap-6 max-w-6xl mx-auto">
             {coreValues.map((value, index) => (
               <div key={index} className="text-center bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-pink-400 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-white font-bold text-lg">{value.title}</span>
                 </div>
                 <p className="text-sm text-gray-700 leading-relaxed">{value.description}</p>
@@ -345,7 +384,7 @@ export default function AboutPage() {
           <div className="max-w-6xl mx-auto">
             <div className="grid md:grid-cols-2 gap-8 mb-12">
               {departments.map((dept, index) => (
-                <div key={index} className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-8 shadow-lg">
+                <div key={index} className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-xl p-8 shadow-lg">
                   <h3 className="text-2xl font-bold text-blue-900 mb-6">{dept.name}</h3>
                   <ul className="space-y-3">
                     {dept.items.map((item, idx) => (
@@ -375,7 +414,7 @@ export default function AboutPage() {
             {members.map((member, index) => (
               <div key={index} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-6">
                 <div className="text-center mb-4">
-                  <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-pink-400 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                     <span className="text-white font-bold text-2xl">
                       {member.name.substring(0, 1)}
                     </span>
@@ -461,7 +500,7 @@ export default function AboutPage() {
               <Card className="group relative p-8 text-center hover:shadow-xl transition-all duration-300 border-0 bg-white shadow-lg overflow-hidden">
                 <div className="absolute top-0 right-0 w-24 h-24 bg-blue-100/20 rounded-bl-full"></div>
                 <div className="relative">
-                  <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform">
+                  <div className="w-14 h-14 bg-gradient-to-br from-orange-400 to-pink-400 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform">
                     <MapPin className="w-7 h-7 text-white" />
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-3">주소</h3>
@@ -514,10 +553,10 @@ export default function AboutPage() {
               <div className="grid lg:grid-cols-2 gap-8">
                 {transportInfo.map((transport, index) => (
                   <Card key={index} className="group p-8 hover:shadow-xl transition-all duration-300 border-gray-100 relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-blue-700 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-400 to-pink-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
                     
                     <div className="flex items-start gap-4 mb-6">
-                      <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
+                      <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-yellow-100 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
                         {transport.icon}
                       </div>
                       <div>
@@ -560,7 +599,7 @@ export default function AboutPage() {
 
 
       {/* CTA */}
-      <section className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+      <section className="bg-gradient-to-r from-orange-500 to-pink-500 text-white">
         <div className="container-main py-16 text-center">
           <h2 className="text-3xl font-bold mb-4">함께 만들어가는 교육의 미래</h2>
           <p className="text-blue-100 mb-8 max-w-2xl mx-auto">

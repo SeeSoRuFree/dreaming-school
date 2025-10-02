@@ -10,11 +10,12 @@ const initialProgramData: Record<string, ProgramDetail> = {
     description: '세상에서 가장 위대한 한평 집 짓기는 인성교육과 함께 10주~12주간 아이들이 직접 집을 지으며 꿈과 비전을 키우는 프로그램입니다.',
     target: '초중고학생, 성인',
     duration: '10주~12주간',
-    maxParticipants: '10~20',
+    max_participants: '10~20',
     fee: '문의',
     location: '문의',
     category: 'building',
-    createdAt: new Date(),
+    created_at: new Date(),
+    is_active: true,
     sessions: [
       {
         order: 1,
@@ -143,11 +144,12 @@ const initialProgramData: Record<string, ProgramDetail> = {
     description: '연령과 수준에 맞는 다양한 모형 집짓기 프로그램을 통해 건축의 기초 원리를 이해하고 창의력과 공간 설계 능력을 키우는 체험 교육입니다.',
     target: '초등학생 전 학년',
     duration: '프로그램별 상이\n(2시간~3일)',
-    maxParticipants: 20,
+    max_participants: 20,
     fee: '문의',
     location: '문의',
     category: 'building',
-    createdAt: new Date(),
+    created_at: new Date(),
+    is_active: true,
     sessions: [
       {
         order: 1,
@@ -191,11 +193,12 @@ const initialProgramData: Record<string, ProgramDetail> = {
     description: '분경, 테라리움, 플렌테리어 등 다양한 원예 프로그램을 통해\n자연과 교감하고 창의력을 키우는 체험 교육입니다.',
     target: '전 연령',
     duration: '프로그램별 상이',
-    maxParticipants: 20,
+    max_participants: 20,
     fee: '문의',
     location: '문의',
     category: 'gardening',
-    createdAt: new Date(),
+    created_at: new Date(),
+    is_active: true,
     sessions: [
       {
         order: 1,
@@ -305,11 +308,12 @@ const initialProgramData: Record<string, ProgramDetail> = {
     description: '텃밭과 꽃밭을 가꾸며 자연과 교감하고 생명의 소중함을 배우는 힐링 원예 프로그램입니다.',
     target: '초중고 학생',
     duration: '10주 과정',
-    maxParticipants: 20,
+    max_participants: 20,
     fee: '무료 (종자 및 재료비 별도)',
     location: '꿈을짓는학교 텃밭',
     category: 'gardening',
-    createdAt: new Date(),
+    created_at: new Date(),
+    is_active: true,
     sessions: [
       {
         order: 1,
@@ -410,11 +414,12 @@ const initialProgramData: Record<string, ProgramDetail> = {
     description: '농촌 지역과 함께 성장하는 상생 프로그램을 통해 농촌 활성화에 기여합니다.',
     target: '전 연령',
     duration: '프로그램별 상이',
-    maxParticipants: 15,
+    max_participants: 15,
     fee: '문의',
     location: '협력 농촌 마을',
     category: 'rural',
-    createdAt: new Date(),
+    created_at: new Date(),
+    is_active: true,
     sessions: [
       {
         order: 1,
@@ -458,11 +463,12 @@ const initialProgramData: Record<string, ProgramDetail> = {
     description: '학교와 지역 공간을 학생들과 함께 리모델링하며 창의력과 협동심을 기르는 프로그램입니다.',
     target: '중고등학생',
     duration: '프로그램별 상이',
-    maxParticipants: 15,
+    max_participants: 15,
     fee: '무료 (재료비 지원)',
     location: '프로젝트 현장',
     category: 'remodeling',
-    createdAt: new Date(),
+    created_at: new Date(),
+    is_active: true,
     sessions: [
       {
         order: 1,
@@ -495,11 +501,12 @@ const initialProgramData: Record<string, ProgramDetail> = {
     description: '과학 원리를 배우고 직접 만들어보는 체험 중심의 창의 교육 프로그램입니다.',
     target: '초중고 학생',
     duration: '프로그램별 상이',
-    maxParticipants: 15,
+    max_participants: 15,
     fee: '무료 (재료비 별도)',
     location: '꿈을짓는학교 과학실',
     category: 'science',
-    createdAt: new Date(),
+    created_at: new Date(),
+    is_active: true,
     sessions: [
       {
         order: 1,
@@ -532,10 +539,10 @@ export const initializeProgramData = () => {
   if (!existingData) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(initialProgramData))
   } else {
-    // Update program 1 with the new maxParticipants value if it's still showing old value
+    // Update program 1 with the new max_participants value if it's still showing old value
     const data = JSON.parse(existingData)
-    if (data['1'] && data['1'].maxParticipants === 20) {
-      data['1'].maxParticipants = '10~20'
+    if (data['1'] && data['1'].max_participants === 20) {
+      data['1'].max_participants = '10~20'
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
     }
   }
@@ -573,7 +580,7 @@ export const updateProgramDetail = (id: string, updatedProgram: ProgramDetail): 
     programDetails[id] = {
       ...updatedProgram,
       id,
-      updatedAt: new Date()
+      updated_at: new Date()
     }
     
     localStorage.setItem(STORAGE_KEY, JSON.stringify(programDetails))

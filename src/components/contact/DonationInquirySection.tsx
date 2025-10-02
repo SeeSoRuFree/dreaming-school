@@ -1,44 +1,48 @@
 'use client'
 
 import { useState } from 'react'
-import { DonationInquiry } from '@/types'
 import { useAlert } from '@/hooks/useAlert'
+import { createInquiry } from '@/lib/supabase'
 
 export default function DonationInquirySection() {
   const { showAlert } = useAlert()
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
-    company: '',
-    donationType: 'corporate' as 'corporate' | 'material' | 'equipment' | 'individual',
+    organization: '',
     message: ''
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    const newInquiry: DonationInquiry = {
-      id: Date.now().toString(),
-      ...formData,
-      createdAt: new Date()
-    }
+    setIsSubmitting(true)
 
-    const saved = localStorage.getItem('donation-inquiries')
-    const existing = saved ? JSON.parse(saved) : []
-    const updated = [newInquiry, ...existing]
-    localStorage.setItem('donation-inquiries', JSON.stringify(updated))
-    
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      company: '',
-      donationType: 'corporate',
-      message: ''
-    })
-    
-    showAlert('후원 문의가 접수되었습니다. 빠른 시일 내에 이메일로 연락드리겠습니다.')
+    try {
+      await createInquiry({
+        type: 'donation',
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone || undefined,
+        organization: formData.organization || undefined,
+        message: formData.message
+      })
+
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        organization: '',
+        message: ''
+      })
+
+      showAlert('후원 문의가 접수되었습니다. 빠른 시일 내에 이메일로 연락드리겠습니다.')
+    } catch (error) {
+      showAlert(error instanceof Error ? error.message : '문의 등록 중 오류가 발생했습니다.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -197,6 +201,7 @@ export default function DonationInquirySection() {
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
                 className="input-field"
+                disabled={isSubmitting}
               />
             </div>
             <div>
@@ -209,6 +214,7 @@ export default function DonationInquirySection() {
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
                 className="input-field"
+                disabled={isSubmitting}
               />
             </div>
           </div>
@@ -224,6 +230,7 @@ export default function DonationInquirySection() {
                 onChange={(e) => setFormData({...formData, phone: e.target.value})}
                 className="input-field"
                 placeholder="010-1234-5678"
+                disabled={isSubmitting}
               />
             </div>
             <div>
@@ -232,44 +239,12 @@ export default function DonationInquirySection() {
               </label>
               <input
                 type="text"
-                value={formData.company}
-                onChange={(e) => setFormData({...formData, company: e.target.value})}
+                value={formData.organization}
+                onChange={(e) => setFormData({...formData, organization: e.target.value})}
                 className="input-field"
                 placeholder="개인 후원의 경우 비워두세요"
+                disabled={isSubmitting}
               />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              후원 유형 <span className="text-red-500">*</span>
-            </label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              {[
-                { value: 'corporate', label: '기업 후원', icon: '🏢' },
-                { value: 'material', label: '자재 후원', icon: '🧱' },
-                { value: 'equipment', label: '공구 후원', icon: '🔨' },
-                { value: 'individual', label: '개인 후원', icon: '💖' }
-              ].map((type) => (
-                <label key={type.value} className="cursor-pointer">
-                  <input
-                    type="radio"
-                    name="donationType"
-                    value={type.value}
-                    checked={formData.donationType === type.value}
-                    onChange={(e) => setFormData({...formData, donationType: e.target.value as 'corporate' | 'material' | 'equipment' | 'individual'})}
-                    className="sr-only"
-                  />
-                  <div className={`p-3 border-2 rounded-lg text-center transition-all duration-200 ${
-                    formData.donationType === type.value
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}>
-                    <div className="text-xl mb-1">{type.icon}</div>
-                    <div className="text-sm font-medium">{type.label}</div>
-                  </div>
-                </label>
-              ))}
             </div>
           </div>
 
@@ -284,6 +259,7 @@ export default function DonationInquirySection() {
               className="textarea-field"
               rows={5}
               placeholder="후원 규모, 후원 방식, 기대하시는 협력 방안 등을 자세히 알려주세요."
+              disabled={isSubmitting}
             />
           </div>
 
@@ -311,8 +287,12 @@ export default function DonationInquirySection() {
             </div>
           </div>
 
-          <button type="submit" className="btn-primary w-full text-lg py-3">
-            후원 상담 신청하기
+          <button
+            type="submit"
+            className="btn-primary w-full text-lg py-3"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? '등록 중...' : '후원 상담 신청하기'}
           </button>
         </form>
       </div>

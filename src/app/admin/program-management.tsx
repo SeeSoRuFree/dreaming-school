@@ -206,7 +206,7 @@ export function ProgramManagementTab() {
                   <div className="flex gap-4 mt-2 text-xs text-gray-500">
                     <span>대상: {program.target}</span>
                     <span>기간: {program.duration}</span>
-                    <span>정원: {program.maxParticipants}명</span>
+                    <span>정원: {program.max_participants}명</span>
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -335,8 +335,8 @@ export function ProgramManagementTab() {
                 <label className="block text-sm font-medium mb-1">정원</label>
                 <input
                   type="number"
-                  value={editingProgram.maxParticipants}
-                  onChange={(e) => setEditingProgram({ ...editingProgram, maxParticipants: parseInt(e.target.value) })}
+                  value={editingProgram.max_participants}
+                  onChange={(e) => setEditingProgram({ ...editingProgram, max_participants: parseInt(e.target.value) })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                 />
               </div>

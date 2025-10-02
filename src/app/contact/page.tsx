@@ -10,7 +10,7 @@ export default function ContactPage() {
   return (
     <>
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-blue-50 to-white pt-24">
+      <section className="bg-gradient-to-b from-orange-50 to-white pt-24">
         <div className="container-main py-16">
           <h1 className="heading-1 text-center">문의</h1>
           <p className="body-text text-center mt-6 max-w-3xl mx-auto text-gray-600">

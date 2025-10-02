@@ -26,6 +26,7 @@ const navigation = [
   { name: 'ABOUT', href: '/about', subItems: aboutSubItems },
   { name: '교육프로그램', href: '/programs', subItems: programSubItems },
   { name: '걸어온 발자취', href: '/footsteps', subItems: null },
+  { name: '언론보도', href: '/media', subItems: null },
   { name: '소식 및 공지', href: '/news', subItems: null },
 ]
 
@@ -118,12 +119,17 @@ export default function Header() {
 
   // 서브메뉴 클릭 핸들러
   const handleSubItemClick = (href: string, sectionId: string) => {
-    router.push(href)
-    setActiveDropdown(null)
+    const currentPath = pathname
+    const targetPath = href
 
-    // 페이지 이동 후 스크롤
-    setTimeout(() => {
-      const element = document.getElementById(sectionId === 'about' ? sectionId : `section-${sectionId}`)
+    // 같은 페이지에서 스크롤만 하는 경우
+    if (currentPath === targetPath) {
+      setActiveDropdown(null)
+      setMobileActiveDropdown(null)
+
+      // programs 페이지는 section- 접두사 필요
+      const elementId = href === '/programs' ? `section-${sectionId}` : sectionId
+      const element = document.getElementById(elementId)
       if (element) {
         const offset = 120
         const elementPosition = element.offsetTop - offset
@@ -132,7 +138,14 @@ export default function Header() {
           behavior: 'smooth'
         })
       }
-    }, 100)
+    } else {
+      // 다른 페이지로 이동하는 경우
+      // programs 페이지는 section- 접두사 포함
+      const hashId = href === '/programs' ? `section-${sectionId}` : sectionId
+      router.push(`${href}#${hashId}`)
+      setActiveDropdown(null)
+      setMobileActiveDropdown(null)
+    }
   }
 
   // 헤더 클래스 결정
@@ -186,8 +199,8 @@ export default function Header() {
                   <Link
                     href={item.href}
                     className={pathname === item.href
-                      ? isScrolled ? 'nav-link-active-blue' : (isHomePage ? 'nav-link-active-transparent' : 'nav-link-active-blue')
-                      : isScrolled ? 'nav-link-blue' : (isHomePage ? 'nav-link-transparent' : 'nav-link-blue')}
+                      ? isScrolled ? 'text-blue-700 bg-blue-50 font-medium text-lg px-5 py-2 rounded-full transition-all duration-200 hover:scale-110' : (isHomePage ? 'nav-link-active-transparent' : 'text-blue-700 bg-blue-50 font-medium text-lg px-5 py-2 rounded-full transition-all duration-200 hover:scale-110')
+                      : isScrolled ? 'text-blue-700 hover:text-blue-800 font-medium text-lg transition-all duration-200 px-5 py-2 rounded-full hover:bg-blue-50 hover:scale-110' : (isHomePage ? 'nav-link-transparent' : 'text-blue-700 hover:text-blue-800 font-medium text-lg transition-all duration-200 px-5 py-2 rounded-full hover:bg-blue-50 hover:scale-110')}
                   >
                     {item.name}
                   </Link>
@@ -288,7 +301,7 @@ export default function Header() {
                     className={`block py-2 ${
                       pathname === item.href
                         ? isScrolled ? 'text-blue-700 font-medium' : (isHomePage ? 'text-white font-medium' : 'text-blue-700 font-medium')
-                        : isScrolled ? 'text-blue-600' : (isHomePage ? 'text-white/90' : 'text-blue-600')
+                        : isScrolled ? 'text-blue-700' : (isHomePage ? 'text-white/90' : 'text-blue-700')
                     }`}
                     onClick={() => setIsMenuOpen(false)}
                   >

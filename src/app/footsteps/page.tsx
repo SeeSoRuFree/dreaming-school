@@ -5,10 +5,12 @@ import Link from 'next/link'
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { FootstepPost } from '@/types'
-import { mockFootstepPosts, initializeMockData } from '@/lib/mock-data'
 import { Calendar, Search, Filter, Eye } from 'lucide-react'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 function FootstepsContent() {
   const [posts, setPosts] = useState<FootstepPost[]>([])
@@ -16,32 +18,55 @@ function FootstepsContent() {
   const [selectedProgram, setSelectedProgram] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const postsPerPage = 6
 
   // 초기 데이터 로드
   useEffect(() => {
-    initializeMockData()
     loadPosts()
   }, [])
 
-  const loadPosts = () => {
-    const savedPosts = localStorage.getItem('footstep-posts')
-    if (savedPosts) {
-      const parsedPosts = JSON.parse(savedPosts)
-      const postsWithDates = parsedPosts.map((post: any) => ({
-        ...post,
-        createdAt: new Date(post.createdAt),
-        updatedAt: post.updatedAt ? new Date(post.updatedAt) : undefined
-      }))
-      // 최신순으로 정렬
-      postsWithDates.sort((a: FootstepPost, b: FootstepPost) => 
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  const loadPosts = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/footsteps?select=*&order=created_at.desc`,
+        {
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          },
+        }
       )
+
+      if (!response.ok) {
+        throw new Error('데이터를 불러오는데 실패했습니다.')
+      }
+
+      const data = await response.json()
+
+      const postsWithDates = data.map((post: any) => ({
+        id: post.id,
+        title: post.title,
+        content: post.content,
+        programCategory: post.program_category,
+        programName: post.program_name,
+        authorId: post.author_id,
+        authorName: post.author_name,
+        createdAt: new Date(post.created_at),
+        updatedAt: post.updated_at ? new Date(post.updated_at) : undefined,
+      }))
+
       setPosts(postsWithDates)
       setFilteredPosts(postsWithDates)
-    } else {
-      setPosts(mockFootstepPosts)
-      setFilteredPosts(mockFootstepPosts)
+    } catch (err) {
+      console.error('Error loading posts:', err)
+      setError(err instanceof Error ? err.message : '데이터를 불러오는데 실패했습니다.')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -99,10 +124,37 @@ function FootstepsContent() {
     return tmp.textContent || tmp.innerText || ""
   }
 
+  if (loading) {
+    return (
+      <div className="bg-gradient-to-b from-orange-50 to-white pt-24">
+        <div className="container-main py-16">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">로딩 중...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="bg-gradient-to-b from-orange-50 to-white pt-24">
+        <div className="container-main py-16">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-red-600 mb-4">오류가 발생했습니다</h1>
+            <p className="text-gray-600 mb-8">{error}</p>
+            <Button onClick={loadPosts}>다시 시도</Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <>
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-blue-50 to-white pt-24">
+      <section className="bg-gradient-to-b from-orange-50 to-white pt-24">
         <div className="container-main py-16">
           <h1 className="heading-1 text-center">걸어온 발자취</h1>
           <p className="body-text text-center mt-6 max-w-3xl mx-auto text-gray-600">
@@ -264,7 +316,7 @@ function FootstepsContent() {
 export default function FootstepsPage() {
   return (
     <Suspense fallback={
-      <div className="bg-gradient-to-b from-blue-50 to-white pt-24">
+      <div className="bg-gradient-to-b from-orange-50 to-white pt-24">
         <div className="container-main py-16">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>

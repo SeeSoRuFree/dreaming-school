@@ -1,30 +1,55 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Image from 'next/image'
 import { ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import InfiniteScrollGallery from '@/components/ui/InfiniteScrollGallery'
-import { ProgramDetail } from '@/types'
-import { getProgramDetailById } from '@/lib/program-data'
+import { getProgramById } from '@/lib/supabase'
+
+interface ProgramSession {
+  id: string
+  order_num: number
+  title: string
+  description?: string
+  images?: { id: string; image_url: string; order_num: number }[]
+}
+
+interface ProgramData {
+  id: string
+  title: string
+  subtitle?: string
+  description?: string
+  target?: string
+  duration?: string
+  max_participants?: string
+  fee?: string
+  location?: string
+  category: string
+  is_active: boolean
+  sessions?: ProgramSession[]
+}
 
 export default function ProgramDetailPage() {
   const params = useParams()
-  const router = useRouter()
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
-  const [program, setProgram] = useState<ProgramDetail | null>(null)
+  const [program, setProgram] = useState<ProgramData | null>(null)
   const [loading, setLoading] = useState(true)
 
   const programId = params.id as string
 
   useEffect(() => {
-    const loadProgram = () => {
-      const programData = getProgramDetailById(programId)
-      setProgram(programData)
-      setLoading(false)
+    const loadProgram = async () => {
+      try {
+        setLoading(true)
+        const data = await getProgramById(programId)
+        setProgram(data)
+      } catch (error) {
+        console.error('프로그램 로딩 실패:', error)
+      } finally {
+        setLoading(false)
+      }
     }
 
     loadProgram()
@@ -61,7 +86,7 @@ export default function ProgramDetailPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section - 크루들의 방과 동일한 스타일 */}
-      <section className="bg-gradient-to-b from-blue-50 to-white">
+      <section className="bg-gradient-to-b from-orange-50 to-white">
         <div className="container-main py-16">
           <div className="text-center">
             <div className="inline-block px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium mb-4">
@@ -122,30 +147,42 @@ export default function ProgramDetailPage() {
               </div>
 
               {/* 프로그램 정보 */}
-              <div className="border-t border-gray-200 pt-8 mb-8">
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 max-w-4xl mx-auto">
-                  <div className="text-center">
-                    <p className="text-sm text-gray-500 mb-1">대상</p>
-                    <p className="font-medium text-gray-900">{program.target}</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-sm text-gray-500 mb-1">교육 기간</p>
-                    <p className="font-medium text-gray-900 whitespace-pre-line">{program.duration}</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-sm text-gray-500 mb-1">정원</p>
-                    <p className="font-medium text-gray-900">{typeof program.maxParticipants === 'number' ? `${program.maxParticipants}명` : `${program.maxParticipants}명`}</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-sm text-gray-500 mb-1">비용</p>
-                    <p className="font-medium text-gray-900">{program.fee}</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-sm text-gray-500 mb-1">장소</p>
-                    <p className="font-medium text-gray-900">{program.location}</p>
+              {(program.target || program.duration || program.max_participants || program.fee || program.location) && (
+                <div className="border-t border-gray-200 pt-8 mb-8">
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 max-w-4xl mx-auto">
+                    {program.target && (
+                      <div className="text-center">
+                        <p className="text-sm text-gray-500 mb-1">대상</p>
+                        <p className="font-medium text-gray-900">{program.target}</p>
+                      </div>
+                    )}
+                    {program.duration && (
+                      <div className="text-center">
+                        <p className="text-sm text-gray-500 mb-1">교육 기간</p>
+                        <p className="font-medium text-gray-900 whitespace-pre-line">{program.duration}</p>
+                      </div>
+                    )}
+                    {program.max_participants && (
+                      <div className="text-center">
+                        <p className="text-sm text-gray-500 mb-1">정원</p>
+                        <p className="font-medium text-gray-900">{program.max_participants}명</p>
+                      </div>
+                    )}
+                    {program.fee && (
+                      <div className="text-center">
+                        <p className="text-sm text-gray-500 mb-1">비용</p>
+                        <p className="font-medium text-gray-900">{program.fee}</p>
+                      </div>
+                    )}
+                    {program.location && (
+                      <div className="text-center">
+                        <p className="text-sm text-gray-500 mb-1">장소</p>
+                        <p className="font-medium text-gray-900">{program.location}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* 신청 버튼 - 심플한 디자인 */}
               <div className="flex justify-center gap-4">
@@ -162,68 +199,65 @@ export default function ProgramDetailPage() {
       </div>
 
       {/* 회차별 교육 내용 */}
-      <div className="bg-gray-50 py-16">
-        <div className="space-y-20">
-          <div className="container-main">
-            <h2 className="text-3xl font-bold text-center text-gray-900 mb-4">
-              {programId === '2' ? '3가지 프로그램 과정' : 
-               programId === '3' ? '9가지 원예 프로그램' :
-               programId === '4' ? '2가지 프로그램' :
-               programId === '5' ? '3가지 프로그램' :
-               programId === '6' ? '2가지 프로그램' : 
-               `${program.sessions.length}주 회차별 교육 내용`}
-            </h2>
-            <p className="text-center text-gray-600 max-w-3xl mx-auto whitespace-pre-line">
-              {programId === '2' 
-                ? '학년과 수준에 맞는 다양한 모형집짓기 프로그램을 선택하여 참여할 수 있습니다.'
-                : programId === '3'
-                ? '작품(고급과정)에 따라 소요시간은 변경될 수 있습니다.\n단기수업 및 심화단계로 차수수업이 진행됩니다.'
-                : programId === '4'
-                ? '과학 원리를 배우고 직접 만들어보는 체험 중심의 창의 교육 프로그램입니다.'
-                : programId === '5'
-                ? '농촌 지역과 함께 성장하고 발전하는 상생 프로그램입니다.'
-                : programId === '6'
-                ? '학교와 지역 공간을 새롭게 디자인하고 변화시키는 프로젝트입니다.'
-                : '매주 단계별로 진행되는 체계적인 교육 과정을 통해 완성도 높은 결과물을 만들어갑니다.'}
-            </p>
+      {program.sessions && program.sessions.length > 0 && (
+        <div className="bg-gray-50 py-16">
+          <div className="space-y-20">
+            <div className="container-main">
+              <h2 className="text-3xl font-bold text-center text-gray-900 mb-4">
+                {program.sessions.length}주 회차별 교육 내용
+              </h2>
+              <p className="text-center text-gray-600 max-w-3xl mx-auto whitespace-pre-line">
+                체계적인 커리큘럼으로 진행됩니다.
+              </p>
           </div>
           
           {/* 회차별 교육 내용 */}
           <div className="space-y-16">
             {program.sessions.map((session, index) => (
-              <div key={session.order} className="space-y-6">
+              <div key={session.id} className="space-y-6">
                 {/* 회차 설명 */}
                 <div className="container-main">
                   <div className="bg-white rounded-xl shadow-md p-6 md:p-8 max-w-4xl mx-auto">
                     <div className="flex items-center mb-4">
                       <div className="bg-gradient-to-br from-blue-600 to-blue-700 text-white font-bold text-lg rounded-full w-14 h-14 flex items-center justify-center mr-4 shadow-lg">
-                        {programId === '2' || programId === '3' || programId === '4' || programId === '5' || programId === '6' ? session.order : `${session.order}주`}
+                        {session.order_num}
                       </div>
                       <div>
                         <h3 className="text-2xl font-bold text-gray-900">{session.title}</h3>
                       </div>
                     </div>
                     {session.description && (
-                      <p className="text-lg text-gray-700 ml-18">{session.description}</p>
+                      <p className="text-lg text-gray-700 ml-18 whitespace-pre-line">{session.description}</p>
                     )}
                   </div>
                 </div>
-                
-                {/* 무한 스크롤 이미지 갤러리 */}
-                <div className="w-full overflow-hidden">
-                  <InfiniteScrollGallery
-                    images={session.images.map((src, idx) => ({ 
-                      src, 
-                      alt: `${session.order}주차: ${session.title} - 이미지 ${idx + 1}` 
-                    }))}
-                    speed={35 + (index % 3) * 5} // 각 회차마다 약간 다른 속도
-                  />
-                </div>
+
+                {/* 이미지 그리드 */}
+                {session.images && session.images.length > 0 && (
+                  <div className="container-main">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {session.images.map((image) => (
+                        <div
+                          key={image.id}
+                          className="relative aspect-square rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-200"
+                          onClick={() => setSelectedImage(image.image_url)}
+                        >
+                          <img
+                            src={image.image_url}
+                            alt={session.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 이미지 모달 */}
       {selectedImage && (
@@ -232,11 +266,10 @@ export default function ProgramDetailPage() {
           onClick={() => setSelectedImage(null)}
         >
           <div className="relative max-w-5xl w-full h-[80vh]">
-            <Image
+            <img
               src={selectedImage}
               alt="확대 이미지"
-              fill
-              className="object-contain"
+              className="w-full h-full object-contain"
             />
             <button
               className="absolute top-4 right-4 text-white bg-black/50 rounded-full p-2 hover:bg-black/70"

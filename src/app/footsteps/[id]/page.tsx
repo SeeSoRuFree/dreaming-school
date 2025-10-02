@@ -8,11 +8,15 @@ import { Calendar, ArrowLeft, Eye, User } from 'lucide-react'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
 
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+
 export default function FootstepDetailPage() {
   const params = useParams()
   const router = useRouter()
   const [post, setPost] = useState<FootstepPost | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const categoryNames = {
     building: '집짓기',
@@ -24,20 +28,51 @@ export default function FootstepDetailPage() {
   }
 
   useEffect(() => {
-    const loadPost = () => {
-      const savedPosts = localStorage.getItem('footstep-posts')
-      if (savedPosts) {
-        const parsedPosts = JSON.parse(savedPosts)
-        const postsWithDates = parsedPosts.map((post: any) => ({
-          ...post,
-          createdAt: new Date(post.createdAt),
-          updatedAt: post.updatedAt ? new Date(post.updatedAt) : undefined
-        }))
-        
-        const foundPost = postsWithDates.find((p: FootstepPost) => p.id === params.id)
-        setPost(foundPost || null)
+    const loadPost = async () => {
+      if (!params.id) return
+
+      try {
+        setLoading(true)
+        setError(null)
+
+        const response = await fetch(
+          `${SUPABASE_URL}/rest/v1/footsteps?id=eq.${params.id}&select=*`,
+          {
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            },
+          }
+        )
+
+        if (!response.ok) {
+          throw new Error('데이터를 불러오는데 실패했습니다.')
+        }
+
+        const data = await response.json()
+
+        if (data.length === 0) {
+          setPost(null)
+        } else {
+          const postData = data[0]
+          setPost({
+            id: postData.id,
+            title: postData.title,
+            content: postData.content,
+            programCategory: postData.program_category,
+            programName: postData.program_name,
+            authorId: postData.author_id,
+            authorName: postData.author_name,
+            createdAt: new Date(postData.created_at),
+            updatedAt: postData.updated_at ? new Date(postData.updated_at) : undefined,
+          })
+        }
+      } catch (err) {
+        console.error('Error loading post:', err)
+        setError(err instanceof Error ? err.message : '데이터를 불러오는데 실패했습니다.')
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
 
     if (params.id) {
@@ -47,7 +82,7 @@ export default function FootstepDetailPage() {
 
   if (loading) {
     return (
-      <div className="bg-gradient-to-b from-blue-50 to-white pt-24">
+      <div className="bg-gradient-to-b from-orange-50 to-white pt-24">
         <div className="container-main py-16">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
@@ -58,9 +93,29 @@ export default function FootstepDetailPage() {
     )
   }
 
+  if (error) {
+    return (
+      <div className="bg-gradient-to-b from-orange-50 to-white pt-24">
+        <div className="container-main py-16">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-red-600 mb-4">오류가 발생했습니다</h1>
+            <p className="text-gray-600 mb-8">{error}</p>
+            <Link
+              href="/footsteps"
+              className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              목록으로 돌아가기
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   if (!post) {
     return (
-      <div className="bg-gradient-to-b from-blue-50 to-white pt-24">
+      <div className="bg-gradient-to-b from-orange-50 to-white pt-24">
         <div className="container-main py-16">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">게시글을 찾을 수 없습니다</h1>
@@ -81,7 +136,7 @@ export default function FootstepDetailPage() {
   return (
     <>
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-blue-50 to-white pt-24">
+      <section className="bg-gradient-to-b from-orange-50 to-white pt-24">
         <div className="container-main py-12">
           <div className="max-w-4xl mx-auto">
             {/* 브레드크럼 */}

@@ -1,202 +1,28 @@
 'use client'
 
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useAlert } from '@/hooks/useAlert'
 import { FootstepPost, User } from '@/types'
-import { useEditor, EditorContent } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import Image from '@tiptap/extension-image'
-import Link from '@tiptap/extension-link'
-import { Plus, Edit, Trash2, Eye, Calendar, Search, Filter } from 'lucide-react'
+import dynamic from 'next/dynamic'
+import { Plus, Edit, Trash2, Eye, Calendar, Search } from 'lucide-react'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
+import { uploadImage } from '@/lib/supabase'
+import 'react-quill-new/dist/quill.snow.css'
+
+// react-quill-new를 동적 임포트 (SSR 방지)
+const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false })
 
 interface FootstepsManagementTabProps {
-  posts: FootstepPost[]
-  setPosts: React.Dispatch<React.SetStateAction<FootstepPost[]>>
   currentUser: User
 }
 
-// Tiptap Editor Toolbar Component
-function MenuBar({ editor }: { editor: any }) {
-  if (!editor) {
-    return null
-  }
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-  const addImage = useCallback(() => {
-    const input = document.createElement('input')
-    input.type = 'file'
-    input.accept = 'image/*'
-    
-    input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0]
-      if (file) {
-        const reader = new FileReader()
-        reader.onload = (event) => {
-          const src = event.target?.result as string
-          editor.chain().focus().setImage({ src }).run()
-        }
-        reader.readAsDataURL(file)
-      }
-    }
-    
-    input.click()
-  }, [editor])
-
-  const setLink = useCallback(() => {
-    const previousUrl = editor.getAttributes('link').href
-    const url = window.prompt('링크 URL을 입력하세요:', previousUrl)
-    
-    if (url === null) {
-      return
-    }
-    
-    if (url === '') {
-      editor.chain().focus().extendMarkRange('link').unsetLink().run()
-      return
-    }
-    
-    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
-  }, [editor])
-
-  return (
-    <div className="border border-gray-200 rounded-t-lg bg-gray-50 p-3 flex flex-wrap gap-1">
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleBold().run()}
-        disabled={!editor.can().chain().focus().toggleBold().run()}
-        className={`p-2 rounded hover:bg-gray-200 transition-colors ${
-          editor.isActive('bold') ? 'bg-gray-300 text-blue-600' : 'bg-white'
-        }`}
-        title="굵게"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6v8h9a4 4 0 014-4 4 4 0 01-4 4H6V4z" />
-        </svg>
-      </button>
-      
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleItalic().run()}
-        disabled={!editor.can().chain().focus().toggleItalic().run()}
-        className={`p-2 rounded hover:bg-gray-200 transition-colors ${
-          editor.isActive('italic') ? 'bg-gray-300 text-blue-600' : 'bg-white'
-        }`}
-        title="기울임"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 4h4m0 0l-4 16m4-16h4m-8 16h4" />
-        </svg>
-      </button>
-      
-      <div className="w-px h-8 bg-gray-300 mx-1 self-center"></div>
-      
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-        className={`p-2 rounded hover:bg-gray-200 transition-colors ${
-          editor.isActive('heading', { level: 1 }) ? 'bg-gray-300 text-blue-600' : 'bg-white'
-        }`}
-        title="제목 1"
-      >
-        H1
-      </button>
-      
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        className={`p-2 rounded hover:bg-gray-200 transition-colors ${
-          editor.isActive('heading', { level: 2 }) ? 'bg-gray-300 text-blue-600' : 'bg-white'
-        }`}
-        title="제목 2"
-      >
-        H2
-      </button>
-      
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-        className={`p-2 rounded hover:bg-gray-200 transition-colors ${
-          editor.isActive('heading', { level: 3 }) ? 'bg-gray-300 text-blue-600' : 'bg-white'
-        }`}
-        title="제목 3"
-      >
-        H3
-      </button>
-      
-      <div className="w-px h-8 bg-gray-300 mx-1 self-center"></div>
-      
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleBulletList().run()}
-        className={`p-2 rounded hover:bg-gray-200 transition-colors ${
-          editor.isActive('bulletList') ? 'bg-gray-300 text-blue-600' : 'bg-white'
-        }`}
-        title="불릿 리스트"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-        </svg>
-      </button>
-      
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        className={`p-2 rounded hover:bg-gray-200 transition-colors ${
-          editor.isActive('orderedList') ? 'bg-gray-300 text-blue-600' : 'bg-white'
-        }`}
-        title="번호 리스트"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
-      
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleBlockquote().run()}
-        className={`p-2 rounded hover:bg-gray-200 transition-colors ${
-          editor.isActive('blockquote') ? 'bg-gray-300 text-blue-600' : 'bg-white'
-        }`}
-        title="인용"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 8l-5-5v10a2 2 0 002 2h10m4-2V4a2 2 0 00-2-2H9" />
-        </svg>
-      </button>
-      
-      <div className="w-px h-8 bg-gray-300 mx-1 self-center"></div>
-      
-      <button
-        type="button"
-        onClick={setLink}
-        className={`p-2 rounded hover:bg-gray-200 transition-colors ${
-          editor.isActive('link') ? 'bg-gray-300 text-blue-600' : 'bg-white'
-        }`}
-        title="링크"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-        </svg>
-      </button>
-      
-      <button
-        type="button"
-        onClick={addImage}
-        className="p-2 rounded bg-white hover:bg-gray-200 transition-colors"
-        title="이미지"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-      </button>
-    </div>
-  )
-}
-
-export default function FootstepsManagementTab({ posts, setPosts, currentUser }: FootstepsManagementTabProps) {
+export default function FootstepsManagementTab({ currentUser }: FootstepsManagementTabProps) {
   const { showAlert } = useAlert()
   const [isCreating, setIsCreating] = useState(false)
   const [editingPost, setEditingPost] = useState<FootstepPost | null>(null)
@@ -206,27 +32,62 @@ export default function FootstepsManagementTab({ posts, setPosts, currentUser }:
   const [currentPage, setCurrentPage] = useState(1)
   const postsPerPage = 10
 
+  // 데이터 상태
+  const [posts, setPosts] = useState<FootstepPost[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
   // 폼 상태
   const [title, setTitle] = useState('')
   const [programCategory, setProgramCategory] = useState<'building' | 'gardening' | 'science' | 'rural' | 'remodeling' | 'general'>('building')
   const [programName, setProgramName] = useState('')
+  const [content, setContent] = useState('')
 
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Image,
-      Link.configure({
-        openOnClick: false,
-      }),
-    ],
-    content: '',
-    immediatelyRender: false,
-    editorProps: {
-      attributes: {
-        class: 'prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl mx-auto focus:outline-none border-0 p-4 min-h-[200px] max-w-none',
-      },
-    },
-  })
+  // Quill 에디터 설정
+  const quillModules = useMemo(() => ({
+    toolbar: {
+      container: [
+        [{ 'header': [1, 2, 3, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        [{ 'align': [] }],
+        ['blockquote', 'code-block'],
+        ['link', 'image'],
+        ['clean']
+      ],
+      handlers: {
+        image: async function(this: any) {
+          const input = document.createElement('input')
+          input.setAttribute('type', 'file')
+          input.setAttribute('accept', 'image/*')
+          input.click()
+
+          input.onchange = async () => {
+            const file = input.files?.[0]
+            if (file) {
+              try {
+                const imageUrl = await uploadImage(file, 'footsteps')
+                const quill = this.quill
+                const range = quill.getSelection(true)
+                quill.insertEmbed(range.index, 'image', imageUrl)
+                quill.setSelection(range.index + 1)
+              } catch (error) {
+                showAlert('이미지 업로드에 실패했습니다.', 'error')
+              }
+            }
+          }
+        }
+      }
+    }
+  }), [showAlert])
+
+  const quillFormats = [
+    'header',
+    'bold', 'italic', 'underline', 'strike',
+    'list',
+    'align',
+    'blockquote', 'code-block',
+    'link', 'image'
+  ]
 
   // 프로그램 이름 옵션
   const programOptions = {
@@ -274,10 +135,54 @@ export default function FootstepsManagementTab({ posts, setPosts, currentUser }:
     general: '기타'
   }
 
+  // 데이터 로딩
+  useEffect(() => {
+    fetchPosts()
+  }, [])
+
+  const fetchPosts = async () => {
+    try {
+      setIsLoading(true)
+      const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/footsteps?select=*&order=created_at.desc`,
+        {
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          },
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error('데이터를 불러오지 못했습니다.')
+      }
+
+      const data = await response.json()
+      const formattedPosts: FootstepPost[] = data.map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        content: item.content,
+        programCategory: item.program_category,
+        programName: item.program_name,
+        createdAt: new Date(item.created_at),
+        updatedAt: item.updated_at ? new Date(item.updated_at) : undefined,
+        authorId: item.author_id,
+        authorName: item.author_name,
+      }))
+
+      setPosts(formattedPosts)
+    } catch (error) {
+      showAlert('게시글을 불러오는데 실패했습니다.', 'error')
+      setPosts([])
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   // 필터링된 게시글
   const filteredPosts = posts.filter(post => {
     const matchesCategory = selectedCategory === 'all' || post.programCategory === selectedCategory
-    const matchesSearch = !searchQuery || 
+    const matchesSearch = !searchQuery ||
       post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       post.programName.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesCategory && matchesSearch
@@ -292,7 +197,7 @@ export default function FootstepsManagementTab({ posts, setPosts, currentUser }:
     setTitle('')
     setProgramCategory('building')
     setProgramName('')
-    editor?.commands.setContent('')
+    setContent('')
   }
 
   const handleSubmit = async () => {
@@ -306,54 +211,75 @@ export default function FootstepsManagementTab({ posts, setPosts, currentUser }:
       return
     }
 
-    const content = editor?.getHTML() || ''
-    if (!content.trim() || content === '<p></p>') {
+    if (!content.trim() || content === '<p><br></p>') {
       showAlert('내용을 입력해주세요.', 'error')
       return
     }
 
-    const postData: Omit<FootstepPost, 'id'> = {
-      title: title.trim(),
-      content,
-      programCategory,
-      programName: programName.trim(),
-      createdAt: new Date(),
-      authorId: currentUser.id,
-      authorName: currentUser.name
-    }
+    try {
+      if (editingPost) {
+        // 수정
+        const response = await fetch(
+          `${SUPABASE_URL}/rest/v1/footsteps?id=eq.${editingPost.id}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+              'Content-Type': 'application/json',
+              'Prefer': 'return=representation',
+            },
+            body: JSON.stringify({
+              title: title.trim(),
+              content: content,
+              program_category: programCategory,
+              program_name: programName.trim(),
+            }),
+          }
+        )
 
-    if (editingPost) {
-      // 수정
-      const updatedPost: FootstepPost = {
-        ...editingPost,
-        ...postData,
-        updatedAt: new Date()
+        if (!response.ok) {
+          throw new Error('게시글 수정에 실패했습니다.')
+        }
+
+        showAlert('게시글이 수정되었습니다.', 'success')
+        setEditingPost(null)
+      } else {
+        // 생성
+        const response = await fetch(
+          `${SUPABASE_URL}/rest/v1/footsteps`,
+          {
+            method: 'POST',
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+              'Content-Type': 'application/json',
+              'Prefer': 'return=representation',
+            },
+            body: JSON.stringify({
+              title: title.trim(),
+              content: content,
+              program_category: programCategory,
+              program_name: programName.trim(),
+              author_id: currentUser.id,
+              author_name: currentUser.name,
+            }),
+          }
+        )
+
+        if (!response.ok) {
+          throw new Error('게시글 작성에 실패했습니다.')
+        }
+
+        showAlert('게시글이 작성되었습니다.', 'success')
+        setIsCreating(false)
       }
 
-      const updatedPosts = posts.map(post => 
-        post.id === editingPost.id ? updatedPost : post
-      )
-      setPosts(updatedPosts)
-      localStorage.setItem('footstep-posts', JSON.stringify(updatedPosts))
-      
-      setEditingPost(null)
-      showAlert('게시글이 수정되었습니다.', 'success')
-    } else {
-      // 생성
-      const newPost: FootstepPost = {
-        ...postData,
-        id: `footstep_${Date.now()}`
-      }
-
-      const updatedPosts = [newPost, ...posts]
-      setPosts(updatedPosts)
-      localStorage.setItem('footstep-posts', JSON.stringify(updatedPosts))
-      
-      setIsCreating(false)
-      showAlert('게시글이 작성되었습니다.', 'success')
+      resetForm()
+      fetchPosts()
+    } catch (error) {
+      showAlert(error instanceof Error ? error.message : '오류가 발생했습니다.', 'error')
     }
-
-    resetForm()
   }
 
   const handleEdit = (post: FootstepPost) => {
@@ -361,24 +287,50 @@ export default function FootstepsManagementTab({ posts, setPosts, currentUser }:
     setTitle(post.title)
     setProgramCategory(post.programCategory)
     setProgramName(post.programName)
-    editor?.commands.setContent(post.content)
+    setContent(post.content)
     setIsCreating(true)
   }
 
-  const handleDelete = (postId: string) => {
-    if (confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
-      const updatedPosts = posts.filter(post => post.id !== postId)
-      setPosts(updatedPosts)
-      localStorage.setItem('footstep-posts', JSON.stringify(updatedPosts))
+  const handleDelete = async (postId: string) => {
+    if (!confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
+      return
+    }
+
+    try {
+      const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/footsteps?id=eq.${postId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          },
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error('게시글 삭제에 실패했습니다.')
+      }
+
       showAlert('게시글이 삭제되었습니다.', 'success')
+      fetchPosts()
+    } catch (error) {
+      showAlert(error instanceof Error ? error.message : '삭제 중 오류가 발생했습니다.', 'error')
     }
   }
-
 
   const stripHtml = (html: string) => {
     const tmp = document.createElement("DIV")
     tmp.innerHTML = html
     return tmp.textContent || tmp.innerText || ""
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-gray-500">로딩 중...</div>
+      </div>
+    )
   }
 
   if (isCreating || editingPost) {
@@ -460,19 +412,20 @@ export default function FootstepsManagementTab({ posts, setPosts, currentUser }:
               </select>
             </div>
 
-
             {/* 내용 에디터 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 내용 *
               </label>
-              <div className="border border-gray-300 rounded-lg overflow-hidden">
-                <MenuBar editor={editor} />
-                <EditorContent 
-                  editor={editor} 
-                  className="border-0 rounded-b-lg bg-white min-h-[300px]"
-                />
-              </div>
+              <ReactQuill
+                theme="snow"
+                value={content}
+                onChange={setContent}
+                modules={quillModules}
+                formats={quillFormats}
+                className="bg-white"
+                style={{ height: '400px', marginBottom: '50px' }}
+              />
             </div>
           </div>
         </Card>
@@ -484,7 +437,7 @@ export default function FootstepsManagementTab({ posts, setPosts, currentUser }:
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-xl font-semibold">걸어온 발자취 관리</h3>
-        <Button 
+        <Button
           onClick={() => setIsCreating(true)}
           className="bg-blue-600 hover:bg-blue-700"
         >
@@ -505,7 +458,7 @@ export default function FootstepsManagementTab({ posts, setPosts, currentUser }:
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        
+
         <select
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value as any)}
@@ -636,10 +589,9 @@ export default function FootstepsManagementTab({ posts, setPosts, currentUser }:
                 </Button>
               </div>
             </div>
-            
+
             <div className="p-6">
-              
-              <div 
+              <div
                 className="prose max-w-none"
                 dangerouslySetInnerHTML={{ __html: selectedPost.content }}
               />

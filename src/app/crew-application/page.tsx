@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useAlert } from '@/hooks/useAlert'
-import { CrewApplication } from '@/types'
+import { createCrewApplication } from '@/lib/supabase'
 
 export default function CrewApplicationPage() {
   const router = useRouter()
@@ -23,6 +23,36 @@ export default function CrewApplicationPage() {
     motivation: '',
     questions: ''
   })
+
+  // 전화번호 포맷팅 함수
+  const formatPhoneNumber = (value: string) => {
+    // 숫자만 추출
+    const numbers = value.replace(/[^\d]/g, '')
+
+    // 길이에 따라 포맷 적용
+    if (numbers.length <= 3) {
+      return numbers
+    } else if (numbers.length <= 7) {
+      return `${numbers.slice(0, 3)}-${numbers.slice(3)}`
+    } else if (numbers.length <= 10) {
+      return `${numbers.slice(0, 3)}-${numbers.slice(3, 6)}-${numbers.slice(6)}`
+    } else {
+      return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`
+    }
+  }
+
+  // 전화번호 입력 핸들러
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value)
+    setFormData({ ...formData, phone: formatted })
+  }
+
+  // 전화번호 유효성 검사 함수
+  const isValidPhoneNumber = (phone: string) => {
+    const numbers = phone.replace(/[^\d]/g, '')
+    // 10자리 또는 11자리 숫자여야 함
+    return numbers.length === 10 || numbers.length === 11
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -45,68 +75,25 @@ export default function CrewApplicationPage() {
       return
     }
 
-    // 전화번호 형식 확인
-    const phoneRegex = /^[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}$/
-    if (!phoneRegex.test(formData.phone)) {
-      showAlert('전화번호를 xxx-xxxx-xxxx 형식으로 입력해주세요.', '입력 오류')
+    // 전화번호 유효성 검사
+    if (!isValidPhoneNumber(formData.phone)) {
+      showAlert('올바른 전화번호를 입력해주세요. (10-11자리 숫자)', '입력 오류')
       return
     }
 
     setIsSubmitting(true)
 
     try {
-      // 비로그인 사용자를 위한 임시 사용자 생성
-      const userId = `guest_${Date.now()}`
-      
-      // 크루 신청 생성
-      const newApplication: CrewApplication = {
-        id: `crew_app_${Date.now()}`,
-        userId: userId,
-        status: 'pending',
-        appliedAt: new Date(),
-        motivation: formData.motivation,
-        experience: '', // 폼에서 경험 필드를 추가할 수도 있음
-        availableTime: '', // 폼에서 활동 가능 시간 필드를 추가할 수도 있음
-        skills: [], // 폼에서 기술 필드를 추가할 수도 있음
-      }
-
-      // 기존 신청 확인 (이메일 기준)
-      const existingApplications = localStorage.getItem('crew-applications')
-      const applications = existingApplications ? JSON.parse(existingApplications) : []
-      
-      // 이메일로 중복 신청 확인
-      const existingUsers = localStorage.getItem('dream-house-users')
-      const users = existingUsers ? JSON.parse(existingUsers) : []
-      const hasExistingApplication = users.find(
-        (user: any) => user.email === formData.email && user.crewStatus === 'pending'
-      )
-      
-      if (hasExistingApplication) {
-        showAlert('해당 이메일로 이미 대기 중인 크루 신청이 있습니다.', '중복 신청')
-        return
-      }
-
-      // 신청 저장
-      applications.push(newApplication)
-      localStorage.setItem('crew-applications', JSON.stringify(applications))
-
-      // 게스트 사용자 정보 생성 및 저장
-      const newUser = {
-        id: userId,
+      // Supabase에 크루 신청 저장
+      await createCrewApplication({
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
-        password: '', // 게스트 사용자는 비밀번호 없음
-        role: 'guest' as const,
         gender: formData.gender,
-        crewStatus: 'pending' as const,
-        joinPath: '크루 신청',
-        firstImpression: formData.motivation,
-        createdAt: new Date()
-      }
-      
-      users.push(newUser)
-      localStorage.setItem('dream-house-users', JSON.stringify(users))
+        privacy_consent: formData.privacyConsent,
+        motivation: formData.motivation,
+        questions: formData.questions || undefined
+      })
 
       showAlert('크루 신청이 완료되었습니다. 검토 후 연락드리겠습니다.', '신청 완료')
       router.push('/')
@@ -233,11 +220,13 @@ export default function CrewApplicationPage() {
                 <input
                   type="tel"
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  onChange={handlePhoneChange}
                   placeholder="010-0000-0000"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  maxLength={13}
                   required
                 />
+                <p className="text-xs text-gray-500 mt-1">숫자만 입력하시면 자동으로 형식이 적용됩니다.</p>
               </div>
 
               <div>
