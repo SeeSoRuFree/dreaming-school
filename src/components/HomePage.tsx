@@ -5,7 +5,7 @@ import DefaultHomePage from '@/components/themes/DefaultHomePage'
 import AnimatedHeroText from '@/components/ui/AnimatedHeroText'
 
 export default function HomePage() {
-  const [heroVideoUrl, setHeroVideoUrl] = useState<string>('https://oprwxbtukrafehaotgqm.supabase.co/storage/v1/object/public/sales-storage//test.mp4')
+  const [heroVideoUrl, setHeroVideoUrl] = useState<string>('https://ogxbygeubwxqkzgvvnhl.supabase.co/storage/v1/object/public/videos/hero/main-video.mp4')
 
   useEffect(() => {
     // localStorage에서 hero 동영상 URL 가져오기
