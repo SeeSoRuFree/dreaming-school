@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { useAlert } from '@/hooks/useAlert'
 import { getCrewApplications, updateCrewApplicationStatus } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
+import { Download, Link2, CheckCircle, Plus } from 'lucide-react'
+import Link from 'next/link'
 
 interface CrewApplication {
   id: string
@@ -27,6 +29,7 @@ export function CrewApplicationsManagementTab() {
   const [allApplications, setAllApplications] = useState<CrewApplication[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState<'all' | 'unread' | 'completed'>('all')
+  const [showCopySuccess, setShowCopySuccess] = useState(false)
 
   useEffect(() => {
     loadApplications()
@@ -69,6 +72,58 @@ export function CrewApplicationsManagementTab() {
     })
   }
 
+  const handleCSVDownload = () => {
+    // CSV 헤더 정의
+    const headers = ['이름', '이메일', '전화번호', '성별', '신청일', '지원동기', '궁금한점', '상태']
+
+    // 데이터를 CSV 형식으로 변환
+    const csvData = allApplications.map(app => {
+      return [
+        app.name || '',
+        app.email || '',
+        app.phone || '-',
+        app.gender === 'male' ? '남자' : '여자',
+        new Date(app.created_at).toLocaleDateString('ko-KR'),
+        `"${app.motivation.replace(/"/g, '""')}"`, // 큰따옴표 처리 및 텍스트 감싸기
+        `"${(app.questions || '').replace(/"/g, '""')}"`,
+        app.status === 'unread' ? '확인 전' : '확인 완료'
+      ]
+    })
+
+    // CSV 생성
+    const csvContent = [
+      headers.join(','),
+      ...csvData.map(row => row.join(','))
+    ].join('\n')
+
+    // BOM 추가 (한글 깨짐 방지)
+    const BOM = '\uFEFF'
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' })
+
+    // 다운로드 실행
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    const today = new Date().toISOString().split('T')[0]
+    link.setAttribute('href', url)
+    link.setAttribute('download', `크루신청목록_${today}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
+  const handleCopyLink = async () => {
+    const applicationUrl = `${window.location.origin}/crew-application`
+    try {
+      await navigator.clipboard.writeText(applicationUrl)
+      setShowCopySuccess(true)
+      setTimeout(() => setShowCopySuccess(false), 3000)
+    } catch (error) {
+      console.error('Failed to copy link:', error)
+      showAlert('링크 복사에 실패했습니다.')
+    }
+  }
+
   // 필터링된 신청 목록
   const filteredApplications = statusFilter === 'all'
     ? allApplications
@@ -80,7 +135,47 @@ export function CrewApplicationsManagementTab() {
 
   return (
     <div>
-      <h2 className="heading-2 mb-6">크루 신청 관리</h2>
+      {/* Header with Actions */}
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h2 className="heading-2">크루 신청 관리</h2>
+          <p className="text-gray-600 mt-1">총 {allApplications.length}건의 크루 신청이 있습니다.</p>
+        </div>
+        <div className="flex gap-2 items-center">
+          <Button
+            onClick={handleCSVDownload}
+            className="bg-gray-600 hover:bg-gray-700 text-white"
+            disabled={allApplications.length === 0}
+          >
+            <Download className="w-4 h-4 mr-2" />
+            CSV 다운로드
+          </Button>
+          <Button
+            onClick={handleCopyLink}
+            className="bg-purple-600 hover:bg-purple-700 text-white relative"
+          >
+            <Link2 className="w-4 h-4 mr-2" />
+            크루 신청 링크 복사
+            {showCopySuccess && (
+              <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-3 py-1 rounded-md text-sm whitespace-nowrap flex items-center gap-1">
+                <CheckCircle className="w-3 h-3" />
+                복사되었습니다!
+              </div>
+            )}
+          </Button>
+          <Link href="/crew-application">
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+              <Plus className="w-4 h-4 mr-2" />
+              크루 추가하기
+            </Button>
+          </Link>
+          <a href="https://maily.so/" target="_blank" rel="noopener noreferrer">
+            <Button className="bg-green-600 hover:bg-green-700 text-white">
+              Maily 바로가기
+            </Button>
+          </a>
+        </div>
+      </div>
 
       {/* Status Filter */}
       <div className="mb-6">

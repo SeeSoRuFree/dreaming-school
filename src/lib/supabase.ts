@@ -347,8 +347,11 @@ export async function getPrograms(filters?: {
  * Supabase REST API를 사용하여 프로그램 상세를 조회합니다.
  */
 export async function getProgramById(id: string): Promise<any> {
+  // 짧은 ID (8자리)인 경우 전체 프로그램에서 필터링, 전체 UUID인 경우 정확한 매칭
+  const isShortId = id.length === 8
+
   const response = await fetch(
-    `${SUPABASE_URL}/rest/v1/programs?id=eq.${id}`,
+    `${SUPABASE_URL}/rest/v1/programs${isShortId ? '' : `?id=eq.${id}`}`,
     {
       method: 'GET',
       headers: {
@@ -362,14 +365,22 @@ export async function getProgramById(id: string): Promise<any> {
     throw new Error('프로그램 조회 실패');
   }
 
-  const data = await response.json();
+  let data = await response.json();
+
+  // 짧은 ID인 경우 클라이언트 측에서 필터링
+  if (isShortId) {
+    data = data.filter((p: any) => p.id.endsWith(id))
+  }
+
   if (!data || data.length === 0) {
     throw new Error('프로그램을 찾을 수 없습니다');
   }
 
+  const program = data[0]
+
   // 세션 정보 조회
   const sessionsResponse = await fetch(
-    `${SUPABASE_URL}/rest/v1/program_sessions?program_id=eq.${id}&order=order_num.asc`,
+    `${SUPABASE_URL}/rest/v1/program_sessions?program_id=eq.${program.id}&order=order_num.asc`,
     {
       method: 'GET',
       headers: {
@@ -405,7 +416,7 @@ export async function getProgramById(id: string): Promise<any> {
   }
 
   return {
-    ...data[0],
+    ...program,
     sessions
   };
 }
@@ -636,4 +647,115 @@ export async function deleteSessionImage(id: string): Promise<void> {
   if (!response.ok) {
     throw new Error('이미지 삭제 실패');
   }
+}
+
+/**
+ * 대시보드 통계를 조회합니다.
+ */
+export async function getDashboardStats(): Promise<{
+  totalPrograms: number
+  totalFootsteps: number
+  totalInquiries: number
+  totalCrewApplications: number
+}> {
+  // 프로그램 수
+  const programsResponse = await fetch(
+    `${SUPABASE_URL}/rest/v1/programs?select=count`,
+    {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Prefer': 'count=exact'
+      }
+    }
+  )
+  const programsCount = programsResponse.headers.get('content-range')?.split('/')[1] || '0'
+
+  // 걸어온 발자취 수
+  const footstepsResponse = await fetch(
+    `${SUPABASE_URL}/rest/v1/footsteps?select=count`,
+    {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Prefer': 'count=exact'
+      }
+    }
+  )
+  const footstepsCount = footstepsResponse.headers.get('content-range')?.split('/')[1] || '0'
+
+  // 문의 수 (일반 문의만)
+  const inquiriesResponse = await fetch(
+    `${SUPABASE_URL}/rest/v1/inquiries?type=eq.general&select=count`,
+    {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Prefer': 'count=exact'
+      }
+    }
+  )
+  const inquiriesCount = inquiriesResponse.headers.get('content-range')?.split('/')[1] || '0'
+
+  // 크루 신청 수
+  const crewResponse = await fetch(
+    `${SUPABASE_URL}/rest/v1/crew_applications?select=count`,
+    {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Prefer': 'count=exact'
+      }
+    }
+  )
+  const crewCount = crewResponse.headers.get('content-range')?.split('/')[1] || '0'
+
+  return {
+    totalPrograms: parseInt(programsCount),
+    totalFootsteps: parseInt(footstepsCount),
+    totalInquiries: parseInt(inquiriesCount),
+    totalCrewApplications: parseInt(crewCount)
+  }
+}
+
+/**
+ * 최근 문의 목록을 조회합니다 (일반 문의만).
+ */
+export async function getRecentInquiries(limit: number = 5): Promise<any[]> {
+  const response = await fetch(
+    `${SUPABASE_URL}/rest/v1/inquiries?type=eq.general&order=created_at.desc&limit=${limit}`,
+    {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      }
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error('문의 조회 실패')
+  }
+
+  return response.json()
+}
+
+/**
+ * 최근 크루 신청 목록을 조회합니다.
+ */
+export async function getRecentCrewApplications(limit: number = 5): Promise<any[]> {
+  const response = await fetch(
+    `${SUPABASE_URL}/rest/v1/crew_applications?order=created_at.desc&limit=${limit}`,
+    {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      }
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error('크루 신청 조회 실패')
+  }
+
+  return response.json()
 }

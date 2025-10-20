@@ -14,7 +14,8 @@ import {
   MessageSquare,
   LogOut,
   Building2,
-  FileText
+  FileText,
+  Send
 } from 'lucide-react'
 
 interface AdminLayoutProps {
@@ -61,6 +62,11 @@ const menuItems = [
     label: '크루 신청현황',
     href: '/admin/crew-applications',
     icon: Users,
+  },
+  {
+    label: '메일/문자 관리',
+    href: '/admin/communications',
+    icon: Send,
   },
 ]
 

@@ -374,11 +374,12 @@ export default function EditProgramPage() {
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                 >
-                  <option value="building">집짓기</option>
+                  <option value="building">한평집짓기</option>
+                  <option value="model">모형집짓기</option>
                   <option value="gardening">원예</option>
                   <option value="science">과학창의</option>
                   <option value="rural">농촌활성화</option>
-                  <option value="remodeling">리모델링</option>
+                  <option value="remodeling">공간재창조</option>
                 </select>
               </div>
 

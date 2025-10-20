@@ -309,7 +309,7 @@ export default function DonationInquirySection() {
         
         <div className="bg-white text-gray-800 rounded-lg p-6 max-w-md mx-auto shadow-sm">
           <div className="font-bold text-lg mb-2">📞 상담 전화</div>
-          <div className="text-2xl font-bold text-blue-600 mb-2">010-0000-0000</div>
+          <div className="text-2xl font-bold text-blue-600 mb-2">010-2672-1109</div>
           <div className="text-sm text-gray-600">
             평일 9:00~18:00 | 주말 상담 가능
           </div>

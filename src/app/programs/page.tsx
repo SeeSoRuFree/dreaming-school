@@ -158,14 +158,18 @@ export default function ProgramsPage() {
     return () => observer.disconnect()
   }, [isScrolling])
 
-  // URL 해시로 스크롤 처리
+  // URL 해시로 스크롤 처리 (데이터 로딩 완료 후 실행)
   useEffect(() => {
+    // 데이터 로딩이 완료되지 않았으면 실행하지 않음
+    if (loading) return
+
     const hash = window.location.hash.replace('#', '')
     if (hash) {
       const categoryId = hash.replace('section-', '')
       setIsScrolling(true)
       setActiveCategory(categoryId)
 
+      // 데이터 로딩 후 DOM 렌더링을 위한 충분한 지연
       setTimeout(() => {
         const element = document.getElementById(`section-${categoryId}`)
         if (element) {
@@ -179,10 +183,59 @@ export default function ProgramsPage() {
           setTimeout(() => {
             setIsScrolling(false)
           }, 1000)
+        } else {
+          // 요소를 못 찾은 경우 재시도
+          setTimeout(() => {
+            const retryElement = document.getElementById(`section-${categoryId}`)
+            if (retryElement) {
+              const offset = 120
+              const elementPosition = retryElement.offsetTop - offset
+              window.scrollTo({
+                top: elementPosition,
+                behavior: 'smooth'
+              })
+            }
+            setIsScrolling(false)
+          }, 300)
         }
-      }, 100)
+      }, 200)
     }
-  }, [])
+  }, [loading])
+
+  // 해시 변경 감지 (페이지 내에서 해시만 변경될 때)
+  useEffect(() => {
+    const handleHashChange = () => {
+      if (loading) return
+
+      const hash = window.location.hash.replace('#', '')
+      if (hash) {
+        const categoryId = hash.replace('section-', '')
+        setIsScrolling(true)
+        setActiveCategory(categoryId)
+
+        setTimeout(() => {
+          const element = document.getElementById(`section-${categoryId}`)
+          if (element) {
+            const offset = 120
+            const elementPosition = element.offsetTop - offset
+            window.scrollTo({
+              top: elementPosition,
+              behavior: 'smooth'
+            })
+
+            setTimeout(() => {
+              setIsScrolling(false)
+            }, 1000)
+          } else {
+            setIsScrolling(false)
+          }
+        }, 200)
+      }
+    }
+
+    window.addEventListener('hashchange', handleHashChange)
+    return () => window.removeEventListener('hashchange', handleHashChange)
+  }, [loading])
 
   // 카테고리별 프로그램 렌더링 함수
   const renderCategoryPrograms = (categoryId: string, startIndex: number = 0) => {
@@ -219,7 +272,7 @@ export default function ProgramsPage() {
               {/* 프로그램 자세히 보기 버튼 */}
               <div className="pt-6 ml-16">
                 <a
-                  href={`/programs/${program.id}`}
+                  href={`/programs/${program.id.slice(-8)}`}
                   className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-orange-500 to-pink-500 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
                   <span>프로그램 자세히 보기</span>

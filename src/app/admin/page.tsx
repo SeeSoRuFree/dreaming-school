@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAdminAuth } from '@/hooks/useAdminAuth'
 import { AdminLayout } from '@/components/admin/AdminLayout'
+import { getDashboardStats, getRecentInquiries, getRecentCrewApplications } from '@/lib/supabase'
 import {
   Users,
   GraduationCap,
@@ -20,6 +21,21 @@ interface DashboardStats {
   totalCrewApplications: number
 }
 
+interface Inquiry {
+  id: string
+  name: string
+  type: string
+  created_at: string
+  status?: string
+}
+
+interface CrewApplication {
+  id: string
+  name: string
+  created_at: string
+  status?: string
+}
+
 export default function AdminDashboardPage() {
   const router = useRouter()
   const { isAdmin, isLoading } = useAdminAuth()
@@ -29,6 +45,9 @@ export default function AdminDashboardPage() {
     totalInquiries: 0,
     totalCrewApplications: 0,
   })
+  const [recentInquiries, setRecentInquiries] = useState<Inquiry[]>([])
+  const [recentCrewApplications, setRecentCrewApplications] = useState<CrewApplication[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (isLoading) return
@@ -38,22 +57,29 @@ export default function AdminDashboardPage() {
       return
     }
 
-    // 실제 환경에서는 API를 통해 데이터 로드
-    // 현재는 구조만 잡아둠
     loadDashboardStats()
   }, [isAdmin, isLoading, router])
 
   const loadDashboardStats = async () => {
-    // API 호출 예정 위치
-    // const data = await fetch('/api/admin/dashboard').then(res => res.json())
+    try {
+      setLoading(true)
 
-    // 임시 통계 (실제로는 데이터베이스에서 가져옴)
-    setStats({
-      totalPrograms: 0,
-      totalFootsteps: 0,
-      totalInquiries: 0,
-      totalCrewApplications: 0,
-    })
+      // 통계 데이터 로드
+      const statsData = await getDashboardStats()
+      setStats(statsData)
+
+      // 최근 문의 로드
+      const inquiries = await getRecentInquiries(5)
+      setRecentInquiries(inquiries)
+
+      // 최근 크루 신청 로드
+      const crewApps = await getRecentCrewApplications(5)
+      setRecentCrewApplications(crewApps)
+    } catch (error) {
+      console.error('대시보드 데이터 로드 실패:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (isLoading) {
@@ -98,7 +124,7 @@ export default function AdminDashboardPage() {
       value: stats.totalCrewApplications,
       icon: Users,
       color: 'bg-purple-500',
-      link: '/admin/crew'
+      link: '/admin/crew-applications'
     },
   ]
 
@@ -145,9 +171,29 @@ export default function AdminDashboardPage() {
               <MessageSquare className="w-5 h-5 text-gray-400" />
             </div>
             <div className="space-y-3">
-              <p className="text-sm text-gray-500 text-center py-8">
-                문의 데이터가 없습니다.
-              </p>
+              {loading ? (
+                <p className="text-sm text-gray-500 text-center py-8">로딩 중...</p>
+              ) : recentInquiries.length > 0 ? (
+                recentInquiries.map((inquiry) => (
+                  <div key={inquiry.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{inquiry.name}</p>
+                      <p className="text-xs text-gray-500">
+                        {inquiry.type === 'general' ? '일반 문의' : '후원 문의'} • {new Date(inquiry.created_at).toLocaleDateString('ko-KR')}
+                      </p>
+                    </div>
+                    <span className={`text-xs px-2 py-1 rounded-full ${
+                      inquiry.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                    }`}>
+                      {inquiry.status === 'completed' ? '완료' : '대기'}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-gray-500 text-center py-8">
+                  문의 데이터가 없습니다.
+                </p>
+              )}
             </div>
           </div>
 
@@ -158,9 +204,31 @@ export default function AdminDashboardPage() {
               <Users className="w-5 h-5 text-gray-400" />
             </div>
             <div className="space-y-3">
-              <p className="text-sm text-gray-500 text-center py-8">
-                크루 신청 데이터가 없습니다.
-              </p>
+              {loading ? (
+                <p className="text-sm text-gray-500 text-center py-8">로딩 중...</p>
+              ) : recentCrewApplications.length > 0 ? (
+                recentCrewApplications.map((app) => (
+                  <div key={app.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{app.name}</p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(app.created_at).toLocaleDateString('ko-KR')}
+                      </p>
+                    </div>
+                    <span className={`text-xs px-2 py-1 rounded-full ${
+                      app.status === 'approved' ? 'bg-green-100 text-green-700' :
+                      app.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                      'bg-yellow-100 text-yellow-700'
+                    }`}>
+                      {app.status === 'approved' ? '승인' : app.status === 'rejected' ? '거절' : '대기'}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-gray-500 text-center py-8">
+                  크루 신청 데이터가 없습니다.
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -184,7 +252,7 @@ export default function AdminDashboardPage() {
               <span className="text-sm font-medium text-gray-700">소식/공지 관리</span>
             </a>
             <a
-              href="/admin/crew"
+              href="/admin/crew-applications"
               className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition-colors"
             >
               <Users className="w-5 h-5 text-purple-600" />
