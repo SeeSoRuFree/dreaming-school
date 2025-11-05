@@ -27,7 +27,7 @@ export default function FloatingButtons() {
       <div className="fixed bottom-8 right-8 z-40 flex flex-col space-y-3">
         {/* YouTube 버튼 */}
         <a
-          href="https://youtube.com/@dreamingschool"
+          href="https://www.youtube.com/channel/UCRUrWdD3nfAOcXBP-asC6KA"
           target="_blank"
           rel="noopener noreferrer"
           className="bg-red-600 hover:bg-red-700 text-white w-12 h-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center hover:scale-110"
@@ -38,7 +38,7 @@ export default function FloatingButtons() {
 
         {/* Instagram 버튼 */}
         <a
-          href="https://instagram.com/dreamingschool"
+          href="https://www.instagram.com/dreambuilder_school"
           target="_blank"
           rel="noopener noreferrer"
           className="bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500 hover:from-purple-700 hover:via-pink-700 hover:to-orange-600 text-white w-12 h-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center hover:scale-110"
