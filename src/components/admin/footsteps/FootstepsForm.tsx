@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, FormEvent } from 'react'
+import { useState, useMemo, FormEvent, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -32,6 +32,94 @@ export default function FootstepsForm({ currentUser, initialData, mode }: Footst
   const [programName, setProgramName] = useState(initialData?.programName || '')
   const [content, setContent] = useState(initialData?.content || '')
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const [editorInstance, setEditorInstance] = useState<any>(null)
+
+  // Quill의 Image format을 확장하여 width, height, style 속성 지원
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const initQuill = async () => {
+      const ReactQuillModule = await import('react-quill-new')
+      const Quill = ReactQuillModule.default.Quill || (ReactQuillModule as any).Quill
+
+      if (!Quill) return
+
+      const ImageBlot = Quill.import('formats/image') as any
+
+      class CustomImage extends ImageBlot {
+        static formats(node: HTMLElement) {
+          const format: any = {}
+          if (node.hasAttribute('width')) {
+            format.width = node.getAttribute('width')
+          }
+          if (node.hasAttribute('height')) {
+            format.height = node.getAttribute('height')
+          }
+          if (node.style.width) {
+            format.width = node.style.width
+          }
+          if (node.style.height) {
+            format.height = node.style.height
+          }
+          return format
+        }
+
+        format(name: string, value: any) {
+          if (name === 'width' || name === 'height') {
+            if (value) {
+              this.domNode.style[name] = value
+              this.domNode.setAttribute(name, value)
+            } else {
+              this.domNode.style[name] = ''
+              this.domNode.removeAttribute(name)
+            }
+          } else {
+            super.format(name, value)
+          }
+        }
+      }
+
+      Quill.register(CustomImage, true)
+    }
+
+    initQuill()
+  }, [])
+
+  // 이미지에 더블클릭 이벤트 추가하여 크기 조절 가능하게
+  useEffect(() => {
+    if (!editorInstance) return
+
+    const handleImageClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      if (target.tagName === 'IMG') {
+        const currentWidth = target.style.width || target.getAttribute('width') || '100%'
+        const widthValue = parseInt(currentWidth) || 100
+
+        const newWidth = prompt('이미지 너비를 입력하세요 (% 또는 px):', widthValue.toString())
+        if (newWidth) {
+          const hasPercent = newWidth.includes('%')
+          const hasPx = newWidth.includes('px')
+          const finalWidth = hasPercent || hasPx ? newWidth : `${newWidth}px`
+
+          // Quill의 format API를 사용하여 저장 가능하도록 설정
+          const Quill = editorInstance.constructor
+          const blot = Quill.find(target)
+          if (blot) {
+            blot.format('width', finalWidth)
+            blot.format('height', 'auto')
+          }
+        }
+      }
+    }
+
+    const editor = editorInstance.root
+    editor.addEventListener('dblclick', handleImageClick)
+
+    return () => {
+      editor.removeEventListener('dblclick', handleImageClick)
+    }
+  }, [editorInstance])
 
   const quillModules = useMemo(() => ({
     toolbar: {
@@ -76,7 +164,8 @@ export default function FootstepsForm({ currentUser, initialData, mode }: Footst
     'list',
     'align',
     'blockquote', 'code-block',
-    'link', 'image'
+    'link', 'image',
+    'width', 'height'
   ]
 
   const programOptions = {
@@ -216,7 +305,12 @@ export default function FootstepsForm({ currentUser, initialData, mode }: Footst
             <ReactQuill
               theme="snow"
               value={content}
-              onChange={setContent}
+              onChange={(value, delta, source, editor) => {
+                setContent(value)
+                if (!editorInstance && editor) {
+                  setEditorInstance(editor)
+                }
+              }}
               modules={quillModules}
               formats={quillFormats}
               className="bg-white"

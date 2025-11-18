@@ -349,3 +349,28 @@ video {
     @apply bg-gradient-to-br from-orange-50 via-yellow-50 to-pink-50;
   }
 }
+
+/* Quill Image Resize Styles */
+.ql-editor img {
+  cursor: pointer;
+  max-width: 100%;
+  height: auto;
+  transition: outline 0.2s ease;
+}
+
+.ql-editor img:hover {
+  outline: 2px dashed #4299e1;
+  outline-offset: 2px;
+}
+
+.ql-editor img:hover::after {
+  content: '더블클릭하여 크기 조절';
+  position: absolute;
+  background: rgba(66, 153, 225, 0.9);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+}
