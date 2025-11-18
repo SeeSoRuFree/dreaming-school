@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, FormEvent, useEffect, useRef } from 'react'
+import { useState, useMemo, FormEvent, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -33,7 +33,7 @@ export default function FootstepsForm({ currentUser, initialData, mode }: Footst
   const [content, setContent] = useState(initialData?.content || '')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const [editorInstance, setEditorInstance] = useState<any>(null)
+  const quillInstanceRef = useRef<any>(null)
 
   // Quill의 Image format을 확장하여 width, height, style 속성 지원
   useEffect(() => {
@@ -48,27 +48,35 @@ export default function FootstepsForm({ currentUser, initialData, mode }: Footst
       const ImageBlot = Quill.import('formats/image') as any
 
       class CustomImage extends ImageBlot {
+        static create(value: any) {
+          const node = super.create(value)
+          if (typeof value === 'string') {
+            node.setAttribute('src', value)
+          }
+          return node
+        }
+
         static formats(node: HTMLElement) {
-          const format: any = {}
+          const formats: any = super.formats ? super.formats(node) : {}
           if (node.hasAttribute('width')) {
-            format.width = node.getAttribute('width')
+            formats.width = node.getAttribute('width')
           }
           if (node.hasAttribute('height')) {
-            format.height = node.getAttribute('height')
+            formats.height = node.getAttribute('height')
           }
           if (node.style.width) {
-            format.width = node.style.width
+            formats.width = node.style.width
           }
           if (node.style.height) {
-            format.height = node.style.height
+            formats.height = node.style.height
           }
-          return format
+          return formats
         }
 
         format(name: string, value: any) {
           if (name === 'width' || name === 'height') {
             if (value) {
-              this.domNode.style[name] = value
+              this.domNode.style[name] = typeof value === 'number' ? `${value}px` : value
               this.domNode.setAttribute(name, value)
             } else {
               this.domNode.style[name] = ''
@@ -88,7 +96,8 @@ export default function FootstepsForm({ currentUser, initialData, mode }: Footst
 
   // 이미지에 더블클릭 이벤트 추가하여 크기 조절 가능하게
   useEffect(() => {
-    if (!editorInstance) return
+    const quill = quillInstanceRef.current
+    if (!quill || !quill.root) return
 
     const handleImageClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement
@@ -102,24 +111,23 @@ export default function FootstepsForm({ currentUser, initialData, mode }: Footst
           const hasPx = newWidth.includes('px')
           const finalWidth = hasPercent || hasPx ? newWidth : `${newWidth}px`
 
-          // Quill의 format API를 사용하여 저장 가능하도록 설정
-          const Quill = editorInstance.constructor
-          const blot = Quill.find(target)
-          if (blot) {
-            blot.format('width', finalWidth)
-            blot.format('height', 'auto')
-          }
+          // 직접 스타일 적용
+          target.style.width = finalWidth
+          target.style.height = 'auto'
+          target.setAttribute('width', finalWidth)
         }
       }
     }
 
-    const editor = editorInstance.root
+    const editor = quill.root
     editor.addEventListener('dblclick', handleImageClick)
 
     return () => {
-      editor.removeEventListener('dblclick', handleImageClick)
+      if (editor) {
+        editor.removeEventListener('dblclick', handleImageClick)
+      }
     }
-  }, [editorInstance])
+  }, [content])
 
   const quillModules = useMemo(() => ({
     toolbar: {
@@ -164,8 +172,7 @@ export default function FootstepsForm({ currentUser, initialData, mode }: Footst
     'list',
     'align',
     'blockquote', 'code-block',
-    'link', 'image',
-    'width', 'height'
+    'link', 'image'
   ]
 
   const programOptions = {
@@ -307,8 +314,8 @@ export default function FootstepsForm({ currentUser, initialData, mode }: Footst
               value={content}
               onChange={(value, delta, source, editor) => {
                 setContent(value)
-                if (!editorInstance && editor) {
-                  setEditorInstance(editor)
+                if (editor && !quillInstanceRef.current) {
+                  quillInstanceRef.current = editor
                 }
               }}
               modules={quillModules}
