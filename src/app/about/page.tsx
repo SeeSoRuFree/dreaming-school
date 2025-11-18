@@ -351,7 +351,7 @@ export default function AboutPage() {
                     비전
                   </div>
                   <div className="p-6 text-center">
-                    <p className="text-lg font-medium text-gray-800">배움이 행복한 교육을 전하는 행복한 사회교육 전문협체</p>
+                    <p className="text-lg font-medium text-gray-800">배움이 행복한 교육을 전하는 행복한<br/>사회교육 전문협체</p>
                   </div>
                 </div>
               </div>

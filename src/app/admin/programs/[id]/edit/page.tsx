@@ -64,6 +64,8 @@ export default function EditProgramPage() {
 
   const [sessions, setSessions] = useState<SessionForm[]>([])
   const [draggedSession, setDraggedSession] = useState<number | null>(null)
+  const [deletedSessionIds, setDeletedSessionIds] = useState<string[]>([])
+  const [deletedImages, setDeletedImages] = useState<Array<{ id: string; url: string }>>([])
 
   useEffect(() => {
     if (isLoading) return
@@ -152,6 +154,9 @@ export default function EditProgramPage() {
         message: '정말로 이 세션을 삭제하시겠습니까?'
       })
       if (!confirmed) return
+
+      // 삭제된 세션 ID 기록
+      setDeletedSessionIds([...deletedSessionIds, session.id])
     }
 
     setSessions(sessions.filter((_, i) => i !== index).map((s, i) => ({ ...s, order_num: i + 1 })))
@@ -192,6 +197,9 @@ export default function EditProgramPage() {
         message: '정말로 이 이미지를 삭제하시겠습니까?'
       })
       if (!confirmed) return
+
+      // 삭제된 이미지 ID와 URL 기록
+      setDeletedImages([...deletedImages, { id: image.id, url: image.image_url }])
     }
 
     // 메모리 해제
@@ -244,10 +252,18 @@ export default function EditProgramPage() {
     try {
       const programId = params.id as string
 
-      // 1. 프로그램 기본 정보 업데이트
+      // 1. 삭제된 이미지들 처리 (DB 및 스토리지)
+      for (const image of deletedImages) {
+        await deleteSessionImage(image.id)
+        if (image.url) {
+          await deleteImage(image.url)
+        }
+      }
+
+      // 2. 프로그램 기본 정보 업데이트
       await updateProgram(programId, formData)
 
-      // 2. 세션 처리
+      // 3. 세션 처리
       for (let i = 0; i < sessions.length; i++) {
         const session = sessions[i]
 
@@ -271,7 +287,7 @@ export default function EditProgramPage() {
           })
         }
 
-        // 3. 이미지 처리
+        // 4. 이미지 처리
         if (sessionId) {
           for (let j = 0; j < session.images.length; j++) {
             const imageData = session.images[j]
@@ -289,6 +305,11 @@ export default function EditProgramPage() {
             }
           }
         }
+      }
+
+      // 5. 삭제된 세션들 처리
+      for (const sessionId of deletedSessionIds) {
+        await deleteProgramSession(sessionId)
       }
 
       showAlert('프로그램이 수정되었습니다.')
