@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, FormEvent, useEffect, useRef, useCallback } from 'react'
+import { useState, useMemo, FormEvent, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -11,6 +11,14 @@ import { uploadImage } from '@/lib/supabase'
 import 'react-quill-new/dist/quill.snow.css'
 
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false })
+
+// Quill 타입 정의
+interface QuillInstance {
+  root: HTMLDivElement
+  getSelection: (focus?: boolean) => any
+  insertEmbed: (index: number, type: string, value: any) => void
+  setSelection: (index: number) => void
+}
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -33,7 +41,7 @@ export default function FootstepsForm({ currentUser, initialData, mode }: Footst
   const [content, setContent] = useState(initialData?.content || '')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const quillInstanceRef = useRef<any>(null)
+  const editorContainerRef = useRef<HTMLDivElement>(null)
 
   // Quill의 Image format을 확장하여 width, height, style 속성 지원
   useEffect(() => {
@@ -96,16 +104,19 @@ export default function FootstepsForm({ currentUser, initialData, mode }: Footst
 
   // 이미지에 더블클릭 이벤트 추가하여 크기 조절 가능하게
   useEffect(() => {
-    const quill = quillInstanceRef.current
-    if (!quill || !quill.root) return
+    if (typeof window === 'undefined' || !editorContainerRef.current) return
 
-    const handleImageClick = (e: MouseEvent) => {
+    // Quill 에디터의 .ql-editor 요소 찾기
+    const editorRoot = editorContainerRef.current.querySelector('.ql-editor') as HTMLElement
+    if (!editorRoot) return
+
+    const handleImageClick = (e: Event) => {
       const target = e.target as HTMLElement
       if (target.tagName === 'IMG') {
         const currentWidth = target.style.width || target.getAttribute('width') || '100%'
         const widthValue = parseInt(currentWidth) || 100
 
-        const newWidth = prompt('이미지 너비를 입력하세요 (% 또는 px):', widthValue.toString())
+        const newWidth = window.prompt('이미지 너비를 입력하세요 (% 또는 px):', widthValue.toString())
         if (newWidth) {
           const hasPercent = newWidth.includes('%')
           const hasPx = newWidth.includes('px')
@@ -119,12 +130,11 @@ export default function FootstepsForm({ currentUser, initialData, mode }: Footst
       }
     }
 
-    const editor = quill.root
-    editor.addEventListener('dblclick', handleImageClick)
+    editorRoot.addEventListener('dblclick', handleImageClick)
 
     return () => {
-      if (editor) {
-        editor.removeEventListener('dblclick', handleImageClick)
+      if (editorRoot) {
+        editorRoot.removeEventListener('dblclick', handleImageClick)
       }
     }
   }, [content])
@@ -305,19 +315,14 @@ export default function FootstepsForm({ currentUser, initialData, mode }: Footst
           </div>
 
           {/* 내용 */}
-          <div>
+          <div ref={editorContainerRef}>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               내용 *
             </label>
             <ReactQuill
               theme="snow"
               value={content}
-              onChange={(value, delta, source, editor) => {
-                setContent(value)
-                if (editor && !quillInstanceRef.current) {
-                  quillInstanceRef.current = editor
-                }
-              }}
+              onChange={setContent}
               modules={quillModules}
               formats={quillFormats}
               className="bg-white"
