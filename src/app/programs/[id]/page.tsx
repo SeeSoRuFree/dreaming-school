@@ -7,6 +7,7 @@ import { useParams } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { getProgramById } from '@/lib/supabase'
+import InfiniteScrollGallery from '@/components/ui/InfiniteScrollGallery'
 
 interface ProgramSession {
   id: string
@@ -33,7 +34,6 @@ interface ProgramData {
 
 export default function ProgramDetailPage() {
   const params = useParams()
-  const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [program, setProgram] = useState<ProgramData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -232,24 +232,16 @@ export default function ProgramDetailPage() {
                   </div>
                 </div>
 
-                {/* 이미지 그리드 */}
+                {/* 무한 스크롤 이미지 갤러리 */}
                 {session.images && session.images.length > 0 && (
-                  <div className="container-main">
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                      {session.images.map((image) => (
-                        <div
-                          key={image.id}
-                          className="relative aspect-square rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-200"
-                          onClick={() => setSelectedImage(image.image_url)}
-                        >
-                          <img
-                            src={image.image_url}
-                            alt={session.title}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ))}
-                    </div>
+                  <div className="w-full overflow-hidden">
+                    <InfiniteScrollGallery
+                      images={session.images.map((image) => ({
+                        src: image.image_url,
+                        alt: `${session.title} - ${index + 1}회차`
+                      }))}
+                      speed={40}
+                    />
                   </div>
                 )}
               </div>
@@ -258,32 +250,6 @@ export default function ProgramDetailPage() {
           </div>
         </div>
       )}
-
-      {/* 이미지 모달 */}
-      {selectedImage && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
-          onClick={() => setSelectedImage(null)}
-        >
-          <div className="relative max-w-5xl w-full h-[80vh]">
-            <img
-              src={selectedImage}
-              alt="확대 이미지"
-              className="w-full h-full object-contain"
-            />
-            <button
-              className="absolute top-4 right-4 text-white bg-black/50 rounded-full p-2 hover:bg-black/70"
-              onClick={() => setSelectedImage(null)}
-            >
-              <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M18 6L6 18M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* 신청 모달 */}
     </div>
   )
 }
